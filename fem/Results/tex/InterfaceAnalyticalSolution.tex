@@ -1,0 +1,165 @@
+\documentclass[11pt]{article}
+\usepackage[margin=3mm, a4paper]{geometry}
+\usepackage{times,graphicx,rotating,subfig}
+\newcommand{\sw}[1]{\begin{sideways} #1 \end{sideways}}
+\author{CompareMethods}
+\title{InterfaceAnalyticalSolution}
+%==============================
+\begin{document}
+%==============================
+
+\maketitle
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r|r|r|r|r|r|r}
+\sw{ncells} &\sw{setMesh(\%)} &\sw{rhs(\%)} &\sw{matrix(\%)} &\sw{solver(\%)} &\sw{solve(\%)} &\sw{postp(\%)} &\sw{sum}\\\hline\hline
+             14&    0.00&    1.02&    3.92&   87.95&    6.81&    0.30&  1.94e-01\\\hline
+             42&    0.02&    3.20&    9.72&   50.87&   33.70&    2.49&  2.02e-02\\\hline
+            162&    0.02&    2.80&    7.41&   58.91&   27.72&    3.15&  2.82e-02\\\hline
+            614&    0.01&    2.64&    7.10&   58.78&   29.28&    2.19&  3.64e-02\\\hline
+           2398&    0.00&    2.51&    5.56&   59.08&   30.93&    1.91&  7.93e-02\\\hline
+           9522&    0.00&    2.98&    5.97&   58.53&   30.24&    2.27&  2.05e-01\\\hline
+          37966&    0.00&    3.51&    6.00&   55.15&   32.97&    2.36&  7.89e-01\\\hline
+         151712&    0.00&    3.22&    5.76&   51.19&   37.52&    2.32&  3.44e+00\\\hline
+         606506&    0.00&    2.91&    5.56&   47.03&   42.03&    2.47&  1.59e+01\\\hline
+\end{tabular}
+\caption{timer-}
+\end{center}
+\label{tab:timer-}
+\end{table}
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r}
+ncells           &                 \\\hline\hline
+             14&      0.19\\\hline
+             42&      0.02\\\hline
+            162&      0.03\\\hline
+            614&      0.04\\\hline
+           2398&      0.08\\\hline
+           9522&      0.21\\\hline
+          37966&      0.79\\\hline
+         151712&      3.44\\\hline
+         606506&     15.89\\\hline
+\end{tabular}
+\caption{timer}
+\end{center}
+\label{tab:timer}
+\end{table}
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r}
+ncells           & lin-            \\\hline\hline
+             14&              4\\\hline
+             42&             10\\\hline
+            162&             11\\\hline
+            614&             13\\\hline
+           2398&             16\\\hline
+           9522&             16\\\hline
+          37966&             19\\\hline
+         151712&             21\\\hline
+         606506&             22\\\hline
+\end{tabular}
+\caption{iter}
+\end{center}
+\label{tab:iter}
+\end{table}
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r|r}
+ncells           &                  & -o              \\\hline\hline
+             14&  1.32e-01&    0.00\\\hline
+             42&  3.38e-02&    2.48\\\hline
+            162&  3.59e-02&   -0.09\\\hline
+            614&  1.62e-02&    1.19\\\hline
+           2398&  8.30e-03&    0.98\\\hline
+           9522&  3.09e-03&    1.43\\\hline
+          37966&  1.72e-03&    0.85\\\hline
+         151712&  4.62e-04&    1.90\\\hline
+         606506&  2.45e-04&    0.91\\\hline
+\end{tabular}
+\caption{errL2c}
+\end{center}
+\label{tab:errL2c}
+\end{table}
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r|r}
+ncells           &                  & -o              \\\hline\hline
+             14&  1.33e-01&    0.00\\\hline
+             42&  3.75e-02&    2.31\\\hline
+            162&  3.74e-02&    0.00\\\hline
+            614&  1.61e-02&    1.27\\\hline
+           2398&  8.25e-03&    0.98\\\hline
+           9522&  3.08e-03&    1.43\\\hline
+          37966&  1.72e-03&    0.84\\\hline
+         151712&  4.62e-04&    1.90\\\hline
+         606506&  2.45e-04&    0.91\\\hline
+\end{tabular}
+\caption{errL2n}
+\end{center}
+\label{tab:errL2n}
+\end{table}
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r|r}
+ncells           &                  & -o              \\\hline\hline
+             14&      0.40&    0.00\\\hline
+             42&      0.22&    1.11\\\hline
+            162&      0.31&   -0.53\\\hline
+            614&      0.19&    0.72\\\hline
+           2398&      0.12&    0.74\\\hline
+           9522&      0.09&    0.44\\\hline
+          37966&      0.06&    0.44\\\hline
+         151712&      0.05&    0.49\\\hline
+         606506&      0.03&    0.51\\\hline
+\end{tabular}
+\caption{errH1}
+\end{center}
+\label{tab:errH1}
+\end{table}
+%
+%------------------------------
+%
+\begin{table}[!htbp]
+\begin{center}
+\begin{tabular}{r||r|r}
+ncells           &                  & -o              \\\hline\hline
+             14&      0.41&    0.00\\\hline
+             42&      0.22&    1.11\\\hline
+            162&      0.32&   -0.54\\\hline
+            614&      0.20&    0.72\\\hline
+           2398&      0.12&    0.74\\\hline
+           9522&      0.09&    0.44\\\hline
+          37966&      0.06&    0.44\\\hline
+         151712&      0.05&    0.49\\\hline
+         606506&      0.03&    0.51\\\hline
+\end{tabular}
+\caption{errFlux}
+\end{center}
+\label{tab:errFlux}
+\end{table}
+%
+%------------------------------
+%
+
+%==============================
+\end{document}
+%==============================
