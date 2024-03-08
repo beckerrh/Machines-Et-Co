@@ -1,5 +1,5 @@
 import numpy as np
-import torch, tools
+import torch
 import matplotlib.pyplot as plt
 
 #-------------------------------------------------------------
@@ -22,7 +22,8 @@ def create_chats_et_chiens(n = 60):
     return chats, chiens
 #-------------------------------------------------------------
 if __name__ == "__main__":
-    import nn, tools
+    import nn
+
     m=22
     chats, chiens = create_chats_et_chiens(m)
     fig, ax = plt.subplots(layout='constrained')
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     loss = torch.nn.HingeEmbeddingLoss()
     # loss = torch.nn.HuberLoss()
     loss = torch.nn.MSELoss()
-    trainer = tools.trainer.Trainer(data, classifier, optimiser=optimiser, loss=loss)
+    trainer = bazard.tools.trainer.Trainer(data, classifier, optimiser=optimiser, loss=loss)
     res_hist, val_hist = trainer.train2(n_iter=1000)
     nplot = 20
     x1, x2 = np.meshgrid(np.linspace(x1min, x1max,nplot), np.linspace(x2min, x2max,nplot))

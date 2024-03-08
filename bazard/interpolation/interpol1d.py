@@ -1,5 +1,6 @@
 import numpy as np
-import torch, tools
+import torch
+
 
 #-------------------------------------------------------------
 class Interpolater(torch.nn.Module):
@@ -97,7 +98,7 @@ if __name__ == "__main__":
 
     interpols = {}
     for n_layer in range(n_layers):
-        layers = [tools.p1_1d.P1_1d(torch.min(x), torch.max(x), n_neurons=n_neurons, device=DEVICE)]
+        layers = [bazard.tools.p1_1d.P1_1d(torch.min(x), torch.max(x), n_neurons=n_neurons, device=DEVICE)]
         for i in range(n_layer):
             layers.append(torch.nn.Linear(n_neurons, n_neurons, device=DEVICE))
             layers.append(actfct)
@@ -105,7 +106,7 @@ if __name__ == "__main__":
         if n_layer: name += f'{n_layer}'
         interpols[name] = Interpolater(data={'x':x, 'y':y}, model=torch.nn.Sequential(*layers), algo=algo)
 
-    tools.plot.plot_basis({n:ip.model for n,ip in interpols.items()}, add_title=" start")
+    bazard.tools.plot.plot_basis({n:ip.model for n,ip in interpols.items()}, add_title=" start")
     plt.show()
     hist = {}
     for n, ip in interpols.items():
@@ -122,5 +123,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.grid()
     plt.show()
-    tools.plot.plot_basis({n:ip.model for n,ip in interpols.items()}, add_title=" final")
+    bazard.tools.plot.plot_basis({n:ip.model for n,ip in interpols.items()}, add_title=" final")
     plt.show()

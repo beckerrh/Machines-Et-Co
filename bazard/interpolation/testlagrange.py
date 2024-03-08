@@ -1,5 +1,5 @@
 import numpy as np
-import torch, tools
+import torch
 import interpol1d
 #-------------------------------------------------------------
 if __name__ == "__main__":
@@ -14,9 +14,9 @@ if __name__ == "__main__":
     #
     n_neurons = 3
     #
-    model = tools.ffn.FFN_1d(torch.min(x), torch.max(x), n_neurons=n_neurons, dtype=dtype)
+    model = bazard.tools.ffn.FFN_1d(torch.min(x), torch.max(x), n_neurons=n_neurons, dtype=dtype)
     intp = interpol1d.Interpolater(data={'x':x, 'y':y}, model=model, dtype=dtype)
-    model2 =  tools.p1_1d.P1_1d(torch.min(x), torch.max(x), n_neurons=n_neurons, dtype=dtype)
+    model2 =  bazard.tools.p1_1d.P1_1d(torch.min(x), torch.max(x), n_neurons=n_neurons, dtype=dtype)
     intp2 = interpol1d.Interpolater(data={'x':x, 'y':y}, model=model2, dtype=dtype)
 
     intp.model.plot_basis(add_title=" ffn  BEFORE")

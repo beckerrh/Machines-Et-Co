@@ -201,7 +201,7 @@ class SolveODE():
 
 #-------------------------------------------------------------
 if __name__ == "__main__":
-    import applications, applications_analytical_solution, cgk
+    import applications, cgk
     app = applications.Pendulum(goL=2, is_linear=False)
     # app = applications.Pendulum(goL=2, is_linear=True)
     # app = applications_analytical_solution.Oscillator()
