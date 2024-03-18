@@ -41,11 +41,6 @@ class Machine(torch.nn.Module):
             self.coeffs, res, rank, singular_values = torch.linalg.lstsq(M, self.data_y)
             residuals = (M@self.coeffs).flatten() - self.data_y
         return torch.mean(residuals ** 2)
-    def loss_train(self, residual_old):
-        M = self.basis(self.data_x.reshape(-1, 1))
-        self.coeffs, res, rank, singular_values = torch.linalg.lstsq(M, residual_old)
-        v = (M@self.coeffs).flatten()
-        return -torch.sqrt(torch.mean(v*v))
     def loss_interpolate(self, oldsolution):
         M = self.basis(self.data_x.reshape(-1, 1))
         self.coeffs, res, rank, singular_values = torch.linalg.lstsq(M, oldsolution)
@@ -56,8 +51,8 @@ class Machine(torch.nn.Module):
         loss = lossfct()
         loss.backward(retain_graph=True)
         return loss
-    def optimize(self, lossfct, lr=0.01, niter=100, rtol=1e-6, gtol=1e-9, out=0, dtol=1e-12):
-        self.optimiser = torch.optim.Adam(self.parameters(), lr=lr)
+    def optimize(self, lossfct, optimiser, niter=100, rtol=1e-6, gtol=1e-9, out=0, dtol=1e-12):
+        # self.optimiser = torch.optim.Adam(self.parameters(), lr=lr)
         # self.optimiser = torch.optim.LBFGS(self.parameters())
         trn_loss_history = []
         if out > niter: filter = 1
@@ -65,7 +60,7 @@ class Machine(torch.nn.Module):
         else: filter = niter//out
         if(out): print(f"{'Iter':^6s}  {'loss':^12s} {'diffres':^12s}")
         for i in range(niter):
-            ret = self.optimiser.step(partial(self.closure,lossfct=lossfct, optimiser=self.optimiser))
+            ret = optimiser.step(partial(self.closure,lossfct=lossfct,optimiser=optimiser))
             # print(f"{ret=}")
             loss = abs(float(ret))
             diffres = torch.nan
@@ -89,14 +84,23 @@ class Machine(torch.nn.Module):
     def init(self, machine):
         oldsolution = machine(self.data_x)
         self.optimize(lossfct=partial(self.loss_interpolate,oldsolution=oldsolution), lr=0.1, niter=5)
+    def loss_train(self, residual_old):
+        M = self.basis(self.data_x.reshape(-1, 1))
+        # print(f"train {M=}")
+        self.coeffs, res, rank, sv = torch.linalg.lstsq(M, residual_old)
+        # print(f"train {rank=} {res=} {sv=}")
+        v = (M@self.coeffs).flatten()
+        return -torch.sqrt(torch.mean(v*v))+self.basis.regularize(0.001)
     def train(self, machine):
         residual_old = machine(self.data_x) - self.data_y
-        hist = self.optimize(lossfct=partial(self.loss_train, residual_old=residual_old), lr=0.1, niter= 10)
+        optimiser = torch.optim.Adam(self.parameters(), lr=0.01)
+        # optimiser = torch.optim.LBFGS(self.parameters())
+        loss = partial(self.loss_train, residual_old=residual_old)
+        hist = self.optimize(lossfct=loss, optimiser=optimiser, niter= 300, out=10)
         # normalize !!!!
         norm = np.sqrt(np.mean(self.forward(self.data_x).detach().numpy()**2))
         self.coeffs /= norm
         return hist[-1]
-        print(f"{hist=}")
 
 #-------------------------------------------------------------
 class BigMachine(torch.nn.Module):
@@ -150,7 +154,7 @@ if __name__ == "__main__":
     axs[1].legend()
     plt.show()
 
-    niter = 20
+    niter = 4
     bigmachine = BigMachine(machines=[machine], data=(x,y))
     for iter in range(niter):
         bigmachine.solve()
@@ -167,7 +171,8 @@ if __name__ == "__main__":
         axs[0].legend(handles=[p1,p2,p3])
         bigmachine.plot_basis(axs[1])
         plt.show()
-        machine = Machine(data=(x, y), nlayers=1, nneurons=5, actfct=torch.nn.ReLU())
+        if iter==niter-1: break
+        machine = Machine(data=(x, y), nlayers=1, nneurons=7, actfct=torch.nn.ReLU())
         # machine.init(bigmachine)
         eta = machine.train(bigmachine)
         bigmachine.add(machine)

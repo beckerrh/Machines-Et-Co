@@ -27,21 +27,28 @@ class P1_1d(torch.nn.Module):
         self.out_features = n_neurons
         self.dim = 1
         self.nnodes = n_neurons
-        self.dp = torch.nn.Parameter(torch.empty(self.nnodes-1, **self.factory_kwargs))
+        self.dp = torch.nn.Parameter(torch.empty(self.nnodes-2, **self.factory_kwargs))
         self.dp.data[:] = 0
         self.mesh_points = torch.empty(self.nnodes, **self.factory_kwargs)
         self.mesh_points[0] = self.a
         self.mesh_points[-1] = self.b
         self.actfct = kwargs.pop('act', torch.nn.ReLU())
         self.compute_phis()
-    def regularize(self):
-        return 0.00001*torch.sum(self.dp**2)
+    def regularize(self, eps):
+        return eps*torch.mean(torch.abs(self.dp))
     def compute_mesh(self):
         return self.mesh_points.detach().numpy()
     def compute_phis(self):
-        delta = torch.exp(self.dp)
-        cs = torch.cumsum(delta, dim=0)
-        self.mesh_points[1:] = self.a + (self.b-self.a)*cs/cs[-1]
+        if len(self.dp):
+            n = len(self.dp)+1
+            delta = (torch.tanh(self.dp)+1)/n
+            # delta = torch.tanh(self.dp)
+            cs = torch.cumsum(delta, dim=0)
+            # print(f"{cs=}")
+            # sum = cs[-1]
+            # cs[:] /= sum
+            self.mesh_points[1:-1] = self.a + (self.b-self.a)*cs
+            print(f"{self.mesh_points.data=} {self.dp.data=} {delta=} {cs=}")
         xpos = torch.empty(len(self.mesh_points)+2, **self.factory_kwargs)
         # print(f"{xin.dtype=} {xpos.dtype=}")
         xpos[1:-1] = self.mesh_points
