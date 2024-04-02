@@ -35,7 +35,9 @@ class P1_1d(torch.nn.Module):
         self.actfct = kwargs.pop('act', torch.nn.ReLU())
         self.compute_phis()
     def regularize(self, eps):
-        return eps*torch.mean(torch.abs(self.dp))
+        return eps*torch.mean(self.dp**2)
+        return eps * torch.mean(torch.abs(self.dp))
+
     def compute_mesh(self):
         return self.mesh_points.detach().numpy()
     def compute_phis(self):
@@ -48,7 +50,7 @@ class P1_1d(torch.nn.Module):
             # sum = cs[-1]
             # cs[:] /= sum
             self.mesh_points[1:-1] = self.a + (self.b-self.a)*cs
-            print(f"{self.mesh_points.data=} {self.dp.data=} {delta=} {cs=}")
+            # print(f"{self.mesh_points.data=} {self.dp.data=} {delta=} {cs=}")
         xpos = torch.empty(len(self.mesh_points)+2, **self.factory_kwargs)
         # print(f"{xin.dtype=} {xpos.dtype=}")
         xpos[1:-1] = self.mesh_points
