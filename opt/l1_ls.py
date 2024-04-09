@@ -1,108 +1,123 @@
 import numpy as np
 import algo_data
-#-------------------------------------------------------------
-def pdas_hki(A, b, lam, x=None, algoin = algo_data.AlgoIn()):
-    eps=1e-12
-    # print(f"{c=}")
-    if x is None: x = np.zeros(shape=A.shape[1])
-    p = np.zeros_like(x)
-    e = lam*np.ones_like(p)
-    ATA = A.T@A
-    ATb = A.T@b
-    idx = np.arange(len(x))
-    for iter in range(algoin.niter):
-        xm, xp = -np.minimum(0,x), np.maximum(0,x)
-        ik = idx[p > np.maximum(xp,2*e - xm)]
-        ak = idx[p <= np.minimum(xp,2*e - xm)]
-        iak = idx[np.logical_and(p > xp,p <= 2*e - xm)]
-        aik = idx[np.logical_and(p > 2*e - xm, p >= xp)]
-        # print(f"{ak=}")
-        if algoin.verbose:
-            q = 2*e-p
-            pneg = np.count_nonzero(p < -eps)
-            qneg = np.count_nonzero(q < -eps)
-            res = 0.5*np.sum((A@x - b)**2)
-            pen = np.sum(np.abs(x))
-            print(f"{iter=} {res=} {pen=}")
-            print(f"{iter=} {len(ik)=} {len(ak)=} {len(aik)=} {len(iak)=} {pneg=} {qneg=} {np.sum(p * xp)=} {np.sum(q * xm)=}")
-        if iter and pneg == 0 and qneg == 0 and np.sum(p * xp) + np.sum(q*xm) < eps:
-            return algo_data.AlgoOut(niter=iter, x=x)
-        if len(ak):
-            x[ak] = np.linalg.solve(ATA[ak[:, np.newaxis], ak], (p  + ATb -e)[ak])
-        if len(ik):
-            x[ik] = 0
-        if len(aik):
-            p[aik] = 0
-        if len(iak):
-            p[iak] = xp + 2*e
-    return algo_data.AlgoOut(niter=iter, x=x, failure=True)
 
 #-------------------------------------------------------------
-def pdas_hki_schrott(A, b, lam, x=None, algoin = algo_data.AlgoIn()):
-    c = algoin.c
-    eps=1e-12
-    # print(f"{c=}")
-    u = np.zeros(shape=A.shape[1])
-    v = np.zeros_like(u)
-    p = np.zeros_like(u)
-    q = np.zeros_like(u)
-    e = lam*np.ones_like(u)
-    ATA = A.T@A
-    ATb = A.T@b
-    idx = np.arange(len(u))
-    for iter in range(algoin.niter):
-        apk, ipk = idx[u < c * p], idx[u >= c * p]
-        aqk, iqk = idx[v < c * q], idx[v >= c * q]
-        # print(f"{ak=}")
-        if algoin.verbose:
-            uneg = np.count_nonzero(u < -eps)
-            vneg = np.count_nonzero(v < -eps)
-            pneg = np.count_nonzero(p < -eps)
-            qneg = np.count_nonzero(q < -eps)
-            res = 0.5*np.sum((A@u - A@v - b)**2)
-            pen = np.sum(np.abs(u)+np.abs(v))
-            print(f"{iter=} {res=} {pen=}")
-            print(f"{iter=} {len(apk)=} {len(ipk)=} {np.sum(p * u)} #u<0: {uneg} #p<0: {pneg}")
-            print(f"{iter=} {len(aqk)=} {len(iqk)=} {np.sum(q * v)} #v<0: {vneg} #q<0: {qneg}")
-        if iter and uneg == 0 and vneg == 0  and pneg == 0 and qneg == 0 and np.sum(p * u) < eps and np.sum(q * v) < eps:
-            return algo_data.AlgoOut(niter=iter, x=u-v)
-        # if len(ipk) and len(iqk):
-        #     line1 = [ ATA[ipk[:, np.newaxis], ipk],-ATA[ipk[:, np.newaxis], iqk] ]
-        #     line2 = [-ATA[iqk[:, np.newaxis], ipk], ATA[iqk[:, np.newaxis], iqk] ]
-        #     Abig = np.block([line1,line2])
-        #     bbig = np.hstack([(p + ATA@v + ATb -e)[ipk],(p + ATA@u- ATb - e)[iqk]])
-        #     print(f"{Abig.shape=} {bbig.shape=} {np.linalg.eigvals(ATA)=} {np.linalg.eigvals(Abig)=}")
-        #     xbig = np.linalg.solve(Abig, bbig)
-        #     print(f"{xbig.shape=}")
-        #     u[ipk] = xbig[:len(ipk)]
-        #     v[iqk] = xbig[len(ipk):]
-        #     p[ipk] = 0
-        #     q[iqk] = 0
-        if len(ipk):
-            u[ipk] = np.linalg.solve(ATA[ipk[:, np.newaxis], ipk], (p + ATA@v + ATb -e)[ipk])
-            p[ipk] = 0
-        if len(iqk):
-            v[iqk] = np.linalg.solve(ATA[iqk[:, np.newaxis], iqk], (p + ATA@u- ATb - e)[iqk])
-            q[iqk] = 0
-        if len(apk):
-            u[apk] = 0
-            p[apk] = (ATA@u)[apk] - (ATA@v)[apk] - (p +ATb - e)[apk]
-        if len(aqk):
-            v[aqk] = 0
-            q[aqk] = (ATA @ v)[aqk] - (ATA @ u)[aqk] - (p - ATb - e)[aqk]
-    return algo_data.AlgoOut(niter=iter, x=x, failure=True)
+class PDAS_L1():
+    def __init__(self, Q, q, algoin = algo_data.AlgoIn()):
+        self.Q, self.q, self.eps = Q, q, 1e-10
+        self.algoin = algoin
+        self.idx = np.arange(len(q))
+        self.e = algoin.lam*np.ones_like(q)
+        self.method = algoin.method if hasattr(algoin,'method') else "eta"
+        self.gamma = algoin.method if hasattr(algoin,'gamma') else 0.001
+
+    def _solve(self, A, B, xp, xm, xi, eta=None):
+        Q, q, idx, e, gamma = self.Q, self.q, self.idx, self.e, self.gamma
+        IA = np.setdiff1d(idx, A, assume_unique=True)
+        IB = np.setdiff1d(idx, B, assume_unique=True)
+        assert len(np.intersect1d(IA, IB, assume_unique=True))==0
+        M = np.block([[Q[IA[:, np.newaxis], IA]+gamma*np.eye(len(IA)), Q[IA[:, np.newaxis], IB]],
+                      [Q[IB[:, np.newaxis], IA], Q[IB[:, np.newaxis], IB]+gamma*np.eye(len(IB))]])
+        m = np.block([-q[IA]-e[IA], -q[IB]+e[IB]])
+        z = np.linalg.solve(M,m)
+        xp[IA] = z[:len(IA)]
+        xm[IB] = z[len(IA):]
+        xp[A] = 0
+        xm[B] = 0
+        xi[IA] = 0
+        xi[A] = (q+e)[A] + (Q@(xp+xm))[A]
+        if self.method == "eta":
+            eta[IB] = 0
+            eta[B] = (q-e)[B] + (Q@(xp+xm))[B]
+        return len(IA)+len(IB)
+
+    def solve(self, x=None):
+        idx, Q, q, algoin, eps, e = self.idx, self.Q, self.q, self.algoin, self.eps, self.e
+        xi = np.zeros_like(q)
+        if x is None:
+            xp = np.zeros_like(q)
+            xm = np.zeros_like(xp)
+            xi[:] = (q+e)[:]
+        else:
+            xp = np.maximum(0, x)
+            xm = np.minimum(0, x)
+            xi[:] = (Q@x + q + e)[:]
+        if self.method == "eta":
+            eta = np.zeros_like(q)
+            if x is None:
+                eta[:] = (q-e)[:]
+            else:
+                eta[:] = (Q@x + q - e)[:]
+        else:
+            eta = None
+        for iter in range(algoin.niter):
+            A = idx[xp<=xi]
+            if self.method == "eta":
+                B = idx[xm>=eta]
+            else:
+                B = idx[xm>xi-2*e]
+            if algoin.verbose>=2: print(f"{A=} {B=}")
+            n_ac = self._solve(A, B, xp, xm, xi, eta)
+            xp_if, xm_if = np.count_nonzero(xp < -eps), np.count_nonzero(xm > eps)
+            if self.method == "eta":
+                xi_if, eta_if = np.count_nonzero(xi <-eps), np.count_nonzero(eta > eps)
+                print(f"{np.linalg.norm(xi-eta-2*e)=}")
+                kkt = np.sum(xp * xi) < eps and np.sum(xm * eta) < eps
+            else:
+                xi_if, eta_if = np.count_nonzero(xi <-eps), np.count_nonzero(xi-2*e > eps)
+                kkt = np.sum(xp * xi) < eps and np.sum(xm * (xi-2*e)) < eps
+            loss = 0.5*np.dot(Q@(xp+xm),xp+xm) + np.dot(q,xp+xm)
+            pen = np.dot(e, xp-xm)
+            if algoin.verbose:
+                print(f"{iter:5d} {loss:12.5e} {pen:12.5e} {n_ac:5d} ({len(xp)}) {np.sum(xp * xm):10.3e} {xp_if=:5d} {xm_if=:5d} {xi_if=:5d} {eta_if=:5d}")
+            if iter and xp_if == 0 and xm_if == 0  and xi_if == 0 and eta_if == 0 and kkt:
+                return algo_data.AlgoOut(niter=iter, x=xp+xm)
+        return algo_data.AlgoOut(niter=iter, x=x, failure=True)
+
+
+#-------------------------------------------------------------
+def test(type='mmatrix'):
+    import matplotlib.pyplot as plt
+    ns = [3**k for k in range(1,7)]
+    lams = [0.0001, 0.001, 0.01, 0.1, 0.2]
+    nr = 5
+    data = {lam:np.zeros(len(ns)) for lam in lams}
+    data_fail = {lam:np.zeros(len(ns)) for lam in lams}
+    algoin = algo_data.AlgoIn(niter=30, verbose=1)
+    # algoin.method = 'no_eta'
+    for i,n in enumerate(ns):
+        for ir in range(nr):
+            if type == 'mmatrix':
+                # M += -2*np.sum(M, axis=0).min() * np.eye(n)
+                Q = - np.random.rand(n,n)
+                Q = 0.5*(Q+Q.T)
+                Q += np.diag(-1.1*np.sum(Q, axis=0))
+                print(f"{np.linalg.eigvals(Q).min()=}")
+                q = 2*(np.random.rand(n)-0.5)
+            elif type == 'ls':
+                M = np.random.rand(2 * n, n)
+                Q = M.T @ M
+                q = np.random.rand(n) - 0.5
+            elif type == 'ls-dual':
+                M = np.random.rand(n,n//2)
+                Q = M@M.T
+                q = np.random.rand(n)-0.5
+            else: raise ValueError(f"{type=}")
+            for lam in lams:
+                algoin.lam = lam
+                pdas = PDAS_L1(Q, q, algoin)
+                algoout = pdas.solve()
+                data[lam][i] += algoout.niter/nr
+                if algoout.failure:
+                    data_fail[lam][i] += 1
+                    print(f"{np.all(np.linalg.inv(Q)>0)=}")
+    for lam in lams:
+        plt.plot(ns, data[lam], '-X', label=f"{lam=}")
+    plt.legend()
+    plt.show()
+    print(f"{data_fail=}")
+
 
 #-------------------------------------------------------------
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    N,n = 10, 3
-    A = np.random.rand(N,n)
-    b = np.random.rand(N)
-    algoin = algo_data.AlgoIn(niter=40, verbose=1)
-    algoin.c = 10
-    lam = 5
-    algoout = pdas_hki(A, b, lam, algoin=algoin)
-    print(f"{algoout.x=}")
-    # if algoout.failure:
-    #     print(f"{np.all(np.linalg.inv(M)>0)=}")
-
+    test(type='ls-dual')
