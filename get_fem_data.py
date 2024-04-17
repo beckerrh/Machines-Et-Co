@@ -2,7 +2,7 @@ import simfempy
 import matplotlib.pyplot as plt
 
 #-------------------------------------------------------------
-def get_fem_data(plotting=False, h=0.2, verbose=0):
+def get_fem_data(plotting=False, h=0.4, verbose=0):
     class FlowExample(simfempy.applications.navierstokes.Application):
         def defineGeometry(self, geom, _):
             points = [geom.add_point((-2, 0, 0), mesh_size=h),
@@ -52,15 +52,19 @@ def get_fem_data(plotting=False, h=0.2, verbose=0):
     if plotting:
         heat_solver.application.plot(mesh=heat_solver.mesh, data=data)
         plt.show()
-    return data['point']['U00'], heat_solver.mesh.points, heat_solver.mesh.getBdryPoints("Inflow")
+    return {'T':data['point']['U00'], 'p':heat_solver.mesh.points, 's':heat_solver.mesh.simplices, 'b':heat_solver.mesh.getBdryPoints("Inflow")}
 
 
 #-------------------------------------------------------------
 if __name__ == "__main__":
     import numpy as np
-    T, points, bdry = get_fem_data(plotting=True, verbose=1)
+    import matplotlib.pyplot as plt
+    data = get_fem_data(plotting=True, verbose=1)
+    T, points, bdry, s = data['T'], data['p'], data['b'], data['s']
     print(f"{T.shape=} {T.min()=} {T.max()=}")
     i2 = np.argsort(points[bdry,1])
     b = bdry[i2]
     plt.plot(points[b,1], T[b], '-X')
+    plt.show()
+    plt.tricontourf(points[:,0], points[:,1], s, T)
     plt.show()
