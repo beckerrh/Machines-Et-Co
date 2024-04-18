@@ -1,5 +1,5 @@
 import torch
-
+from sklearn import svm, gaussian_process
 import mlp
 
 # CUDA support
@@ -9,60 +9,23 @@ else:
     DEVICE = torch.device('cpu')
 
 #-------------------------------------------------------------
-class FullLinear(torch.nn.Module):
-    def __init__(self, DEVICE, nneurons, nlayers=0, actfct=torch.nn.Tanh()):
-        super().__init__()
-        layers = [torch.nn.Linear(2, nneurons, device=DEVICE)]
-        layers.append(actfct)
-        for i in range(nlayers):
-            layers.append(torch.nn.Linear(nneurons, nneurons, device=DEVICE))
-            layers.append(actfct)
-        layers.append(torch.nn.Linear(nneurons, 1, device=DEVICE))
-        self.nn = torch.nn.Sequential(*layers)
-    def forward(self, x):
-        return self.nn(x)
-
+def train_svm(x,y):
+    # machine = svm.SVR(kernel='poly', C=100, degree=2, epsilon=0.1, verbose=True)
+    machine = svm.SVR(kernel='rbf', C=100, gamma='auto', epsilon=1., verbose=True)
+    machine.fit(x, y)
+    return machine
 
 #-------------------------------------------------------------
-if __name__ == "__main__":
-    import numpy as np
-    import pathlib
-    import get_fem_data
-    import tqdm
-    import copy
-    import matplotlib.pyplot as plt
-
-    datadir = pathlib.Path("data")
-    if datadir.is_dir():
-        data = {}
-        for p in datadir.glob("*.npy"):
-            name = p.name.split('.npy')[0]
-            data[name] = np.load(p)
-    else:
-        datadir.mkdir()
-        data = get_fem_data.get_fem_data(plotting=True, verbose=1)
-        for k,v in data.items(): np.save(datadir / k, v)
-
-    # oublie z
-    points, T, simp, bdry = data['p'][:,:-1], data['T'], data['s'], data['b']
-    print(f"{points.shape=} {T.shape=}")
-
+def train_nn(x,y, model):
     from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(points, T, train_size=0.7, shuffle=True)
-    X_train = torch.tensor(X_train, dtype=torch.float32)
-    y_train = torch.tensor(y_train, dtype=torch.float32).reshape(-1, 1)
-    X_test = torch.tensor(X_test, dtype=torch.float32)
-    y_test = torch.tensor(y_test, dtype=torch.float32).reshape(-1, 1)
 
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    model = mlp.MLP(
-        input_size=2,
-        hidden_size=400,
-        output_size=1,
-        depth=4,
-        # actfct=torch.nn.Tanh()
-        actfct = torch.nn.ReLU()
-    ).to(device)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, train_size=0.7, shuffle=True)
+
+    dtype = model.nn[0].weight.dtype
+    X_train = torch.tensor(X_train, dtype=dtype)
+    y_train = torch.tensor(y_train, dtype=dtype).reshape(-1, 1)
+    X_test = torch.tensor(X_test, dtype=dtype)
+    y_test = torch.tensor(y_test, dtype=dtype).reshape(-1, 1)
 
     loss_fn = torch.nn.MSELoss()  # mean square error
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
@@ -79,7 +42,7 @@ if __name__ == "__main__":
     # )
 
     # training parameters
-    n_epochs = 500  # number of epochs to run
+    n_epochs = 250  # number of epochs to run
     batch_size = 10  # size of each batch
     batch_start = torch.arange(0, len(X_train), batch_size)
     # Hold the best model
@@ -87,15 +50,15 @@ if __name__ == "__main__":
     best_weights = None
     history = []
 
-# training loop
+    # training loop
     for epoch in range(n_epochs):
         model.train()
         with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=False) as bar:
             bar.set_description(f"Epoch {epoch}")
             for start in bar:
                 # take a batch
-                X_batch = X_train[start:start+batch_size]
-                y_batch = y_train[start:start+batch_size]
+                X_batch = X_train[start:start + batch_size]
+                y_batch = y_train[start:start + batch_size]
                 # forward pass
                 y_pred = model(X_batch)
                 loss = loss_fn(y_pred, y_batch)
@@ -122,9 +85,59 @@ if __name__ == "__main__":
     plt.plot(history)
     plt.show()
 
-    y = model(torch.from_numpy(points).to(dtype=X_test.dtype)).detach().numpy().reshape(-1)
-    print(f"{y.shape=} {y.min()=} {y.max()=}")
-    fig, axs = plt.subplots(1, 2, sharex=True)
-    axs[0].tricontourf(points[:,0], points[:,1], simp, y)
-    axs[1].tricontourf(points[:,0], points[:,1], simp, T)
+
+#-------------------------------------------------------------
+if __name__ == "__main__":
+    import numpy as np
+    import pathlib
+    import get_fem_data
+    import tqdm
+    import copy
+    import matplotlib.pyplot as plt
+
+    datadir = pathlib.Path("data")
+    if datadir.is_dir():
+        data = {}
+        for p in datadir.glob("*.npy"):
+            name = p.name.split('.npy')[0]
+            data[name] = np.load(p)
+    else:
+        datadir.mkdir()
+        data = get_fem_data.get_fem_data(plotting=True, verbose=1)
+        for k,v in data.items(): np.save(datadir / k, v)
+
+    # oublie z
+    points, T, simp, bdry = data['p'][:,:-1], data['T'], data['s'], data['b']
+    print(f"{points.shape=} {T.shape=}")
+
+    machine = train_svm(points, T)
+    svi = machine.support_
+    sv = points[svi]
+    Tsvm = machine.predict(points)
+
+
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    model = mlp.MLP(
+        input_size=2,
+        hidden_size=100,
+        output_size=1,
+        depth=4,
+        # actfct=torch.nn.Tanh()
+        actfct=torch.nn.ReLU()
+    ).to(device)
+    train_nn(points, T, model)
+    dtype = model.nn[0].weight.dtype
+    Tnn = model(torch.from_numpy(points).to(dtype=dtype)).detach().numpy().reshape(-1)
+    print(f"{T.mean()=} {T.min()=} {T.max()=}")
+    print(f"{Tnn.mean()=} {Tnn.min()=} {Tnn.max()=}")
+    print(f"{Tsvm.mean()=} {Tsvm.min()=} {Tsvm.max()=}")
+    print(f"{T.shape=} {svi.shape=}")
+    fig, axs = plt.subplots(1, 3, sharex=True)
+    axs[0].set_title(f"fem")
+    axs[0].tricontourf(points[:,0], points[:,1], simp, T)
+    axs[1].set_title(f"nn")
+    axs[1].tricontourf(points[:,0], points[:,1], simp, Tnn)
+    axs[2].set_title(f"svm")
+    axs[2].tricontourf(points[:,0], points[:,1], simp, Tsvm)
+    axs[2].scatter(points[svi,0], points[svi,1], c='r', marker='x', alpha=0.25)
     plt.show()
