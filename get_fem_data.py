@@ -34,6 +34,7 @@ def get_fem_data(plotting=False, h=0.4, verbose=0):
             problemdata.params.scal_glob["mu"] = 1.
     flow_solver = simfempy.models.navierstokes.NavierStokes(application=FlowExample(), verbose=verbose)
     pp,u_flow = flow_solver.static()
+    data_flow = u_flow.tovisudata()
     if plotting:
         data_flow = u_flow.tovisudata()
         flow_solver.application.plot(mesh=flow_solver.mesh, data=data_flow)
@@ -48,11 +49,16 @@ def get_fem_data(plotting=False, h=0.4, verbose=0):
             problemdata.params.data["convection"] = u_flow.extract(name="v")
     heat_solver = simfempy.models.elliptic.Elliptic(mesh = flow_solver.mesh, application=HeatExample())
     result, u_heat = heat_solver.static(method="linear")
-    data = u_heat.tovisudata()
+    data_heat = u_heat.tovisudata()
     if plotting:
-        heat_solver.application.plot(mesh=heat_solver.mesh, data=data)
+        heat_solver.application.plot(mesh=heat_solver.mesh, data=data_heat)
         plt.show()
-    return {'T':data['point']['U00'], 'p':heat_solver.mesh.points, 's':heat_solver.mesh.simplices, 'b':heat_solver.mesh.getBdryPoints("Inflow")}
+    data = {'points':heat_solver.mesh.points, 'simp':heat_solver.mesh.simplices, 'bdry':heat_solver.mesh.getBdryPoints("Inflow")}
+    data['T'] = data_heat['point']['U00']
+    data['V1'] = data_flow['point']['v_1']
+    data['V2'] = data_flow['point']['v_2']
+    data['P'] = data_flow['cell']['p']
+    return data
 
 
 #-------------------------------------------------------------
@@ -60,7 +66,7 @@ if __name__ == "__main__":
     import numpy as np
     import matplotlib.pyplot as plt
     data = get_fem_data(plotting=True, verbose=1)
-    T, points, bdry, s = data['T'], data['p'], data['b'], data['s']
+    T, points, bdry, s = data['T'], data['points'], data['bdry'], data['simp']
     print(f"{T.shape=} {T.min()=} {T.max()=}")
     i2 = np.argsort(points[bdry,1])
     b = bdry[i2]

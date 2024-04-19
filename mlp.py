@@ -6,6 +6,7 @@ import torch
 class MLP(torch.nn.Module):
     def __init__(self, input_size, output_size, hidden_size, depth, actfct=torch.nn.Tanh()):
         super().__init__()
+        self.depth = depth
         layers = [torch.nn.Linear(input_size, hidden_size)]
         layers.append(actfct)
         for i in range(depth):
@@ -20,6 +21,11 @@ class MLP(torch.nn.Module):
         for p in self.layers.parameters():
             print(f"{p.data=} {p.grad=}")
     def fromnptonp(self, x):
-        print(f"{x.shape=}")
+        # print(f"{x.shape=}")
         if x.ndim==1: x = x.reshape(-1,1)
         return self(torch.from_numpy(x).to(self.dtype)).detach().numpy().reshape(-1)
+    def regularize(self, eps=0.001):
+        reg = 0
+        for i in range(self.depth+1):
+            reg += eps*torch.mean(self.layers[2*i].weight.data**2)
+        return reg
