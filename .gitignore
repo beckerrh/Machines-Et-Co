@@ -5,6 +5,7 @@ __pycache__/
 
 # Apple
 .DS_store
+data
 
 # C extensions
 *.so

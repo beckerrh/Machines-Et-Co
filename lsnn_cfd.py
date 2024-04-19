@@ -21,7 +21,7 @@ def train_nn(x,y, model):
 
     X_train, X_test, y_train, y_test = train_test_split(x, y, train_size=0.7, shuffle=True)
 
-    dtype = model.nn[0].weight.dtype
+    dtype = model.dtype
     X_train = torch.tensor(X_train, dtype=dtype)
     y_train = torch.tensor(y_train, dtype=dtype).reshape(-1, 1)
     X_test = torch.tensor(X_test, dtype=dtype)
@@ -115,7 +115,6 @@ if __name__ == "__main__":
     sv = points[svi]
     Tsvm = machine.predict(points)
 
-
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model = mlp.MLP(
         input_size=2,
@@ -126,8 +125,8 @@ if __name__ == "__main__":
         actfct=torch.nn.ReLU()
     ).to(device)
     train_nn(points, T, model)
-    dtype = model.nn[0].weight.dtype
-    Tnn = model(torch.from_numpy(points).to(dtype=dtype)).detach().numpy().reshape(-1)
+    # Tnn = model(torch.from_numpy(points).to(dtype=dtype)).detach().numpy().reshape(-1)
+    Tnn = model.fromnptonp(points)
     print(f"{T.mean()=} {T.min()=} {T.max()=}")
     print(f"{Tnn.mean()=} {Tnn.min()=} {Tnn.max()=}")
     print(f"{Tsvm.mean()=} {Tsvm.min()=} {Tsvm.max()=}")
