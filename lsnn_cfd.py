@@ -21,64 +21,48 @@ def train_nn(model, x,y):
     tr.train(niter=600, out=100)
     return
 
+#-------------------------------------------------------------
+class Pinn():
+    def __init__(self, model, points, v, T):
+        self.model = model
+        self.points, self.T = points, T
+        self.x, self.y = torch.tensor(points[:,0], requires_grad=True), torch.tensor(points[:,1], requires_grad=True)
+        self.v = torch.tensor(v[0]), torch.tensor(v[1])
+    def parameters(self):
+        return self.model.parameters()
+    def train(self):
+        self.model.train()
+    def eval(self):
+        self.model.eval()
+    def loss_function(self, inputs, targets):
+        # u = self.model(inputs)
+        inputs2 = torch.stack([self.x, self.y]).to(dtype=self.model.dtype).T
+        # print(f"{inputs.shape=} {inputs2.shape=}")
+        u = self.model(inputs2)
+        u_x = torch.autograd.grad(u, self.x, grad_outputs=torch.ones_like(u),
+            retain_graph=True, create_graph=True)[0]
+        # print(f"{u_x.shape=}")
+        u_xx = torch.autograd.grad(u_x.reshape(-1,1), self.x, grad_outputs=torch.ones_like(u),
+            retain_graph=True, create_graph=True)[0]
+        u_y = torch.autograd.grad(u, self.y, grad_outputs=torch.ones_like(u),
+            retain_graph=True, create_graph=True)[0]
+        u_yy = torch.autograd.grad(u_y.reshape(-1,1), self.y, grad_outputs=torch.ones_like(u),
+            retain_graph=True, create_graph=True)[0]
+        # print(f"{u_x.shape=} {torch.linalg.norm(u_x)} {self.v[0].shape=} {torch.linalg.norm(self.v[0])}")
+        pderes = self.v[0]*u_x + self.v[1]*u_y# - 0.001*(u_xx+u_yy)
+        pdeloss = torch.mean(pderes**2)
+        # return torch.mean((u-targets)**2)
+        return pdeloss
+        return torch.mean((u-targets)**2) + pdeloss
 
-    # from sklearn.model_selection import train_test_split
-    #
-    # X_train, X_test, y_train, y_test = train_test_split(x, y, train_size=0.7, shuffle=True)
-    #
-    # dtype = model.dtype
-    # X_train = torch.tensor(X_train, dtype=dtype)
-    # y_train = torch.tensor(y_train, dtype=dtype).reshape(-1, 1)
-    # X_test = torch.tensor(X_test, dtype=dtype)
-    # y_test = torch.tensor(y_test, dtype=dtype).reshape(-1, 1)
-    #
-    # loss_fn = torch.nn.MSELoss()  # mean square error
-    # optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    #
-    # # training parameters
-    # n_epochs = 250  # number of epochs to run
-    # batch_size = 10  # size of each batch
-    # batch_start = torch.arange(0, len(X_train), batch_size)
-    # # Hold the best model
-    # best_mse = np.inf  # init to infinity
-    # best_weights = None
-    # history = []
-    #
-    # # training loop
-    # for epoch in range(n_epochs):
-    #     model.train()
-    #     with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=False) as bar:
-    #         bar.set_description(f"Epoch {epoch}")
-    #         for start in bar:
-    #             # take a batch
-    #             X_batch = X_train[start:start + batch_size]
-    #             y_batch = y_train[start:start + batch_size]
-    #             # forward pass
-    #             y_pred = model(X_batch)
-    #             loss = loss_fn(y_pred, y_batch)
-    #             # backward pass
-    #             optimizer.zero_grad()
-    #             loss.backward()
-    #             # update weights
-    #             optimizer.step()
-    #             # print progress
-    #             bar.set_postfix(mse=float(loss))
-    #     # evaluate accuracy at end of each epoch
-    #     model.eval()
-    #     y_pred = model(X_test)
-    #     mse = loss_fn(y_pred, y_test)
-    #     mse = float(mse)
-    #     history.append(mse)
-    #     if mse < best_mse:
-    #         best_mse = mse
-    #         best_weights = copy.deepcopy(model.state_dict())
-    #
-    # # restore model and return best accuracy
-    # model.load_state_dict(best_weights)
-    # print(f"MSE: {np.sqrt(best_mse):.2f}")
-    # plt.plot(history)
-    # plt.show()
 
+#-------------------------------------------------------------
+def train_pinn(model, data):
+    points, T, v1, v2 = data['points'][:,:-1], data['T'], data['V1'], data['V2']
+    pinns = Pinn(model, points, v=[v1,v2], T=T)
+    tr = trainer.Trainer(pinns, points, T, optimizer="bfgs")
+    tr.train(niter=300, out=10)
+    return
 
 #-------------------------------------------------------------
 if __name__ == "__main__":
@@ -110,7 +94,9 @@ if __name__ == "__main__":
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model = mlp.MLP(input_size=2, output_size=1, hidden_size=60, depth=8, actfct=torch.nn.ReLU()).to(device)
-    train_nn(model, points, T)
+    # train_nn(model, points, T)
+    train_pinn(model, data)
+
     # Tnn = model(torch.from_numpy(points).to(dtype=dtype)).detach().numpy().reshape(-1)
     Tnn = model.fromnptonp(points)
     print(f"{T.mean()=} {T.min()=} {T.max()=}")

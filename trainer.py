@@ -11,16 +11,19 @@ class Trainer():
             self.optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
         elif optimizer=="bfgs":
             self.optimizer = torch.optim.LBFGS(
-                self.model.parameters(), lr=1.0, max_iter=3, tolerance_grad=1e-6,
+                self.model.parameters(), lr=1.0, max_iter=5, tolerance_grad=1e-6,
                 line_search_fn="strong_wolfe")
         else:
             raise ValueError(f"*** unknown {optimizer=}")
-    def loss_function(self):
-        outputs = self.model(self.inputs)
-        return torch.mean((outputs-self.targets)**2)+self.model.regularize()
+    def loss_function(self, inputs, targets):
+        outputs = self.model(inputs)
+        return torch.mean((outputs-targets)**2)+self.model.regularize()
     def closure(self):
         self.optimizer.zero_grad()
-        self.loss = self.loss_function()
+        if hasattr(self.model,"loss_function"):
+            self.loss = self.model.loss_function(self.inputs, self.targets)
+        else:
+            self.loss = self.loss_function(self.inputs, self.targets)
         self.loss.backward()
         return self.loss
     def train(self, niter=150, rtol=1e-6, gtol=1e-9, out=None):
@@ -44,4 +47,63 @@ class Trainer():
         self.model.eval()
         return res_history
 
+
+
+
+    # from sklearn.model_selection import train_test_split
+    #
+    # X_train, X_test, y_train, y_test = train_test_split(x, y, train_size=0.7, shuffle=True)
+    #
+    # dtype = model.dtype
+    # X_train = torch.tensor(X_train, dtype=dtype)
+    # y_train = torch.tensor(y_train, dtype=dtype).reshape(-1, 1)
+    # X_test = torch.tensor(X_test, dtype=dtype)
+    # y_test = torch.tensor(y_test, dtype=dtype).reshape(-1, 1)
+    #
+    # loss_fn = torch.nn.MSELoss()  # mean square error
+    # optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    #
+    # # training parameters
+    # n_epochs = 250  # number of epochs to run
+    # batch_size = 10  # size of each batch
+    # batch_start = torch.arange(0, len(X_train), batch_size)
+    # # Hold the best model
+    # best_mse = np.inf  # init to infinity
+    # best_weights = None
+    # history = []
+    #
+    # # training loop
+    # for epoch in range(n_epochs):
+    #     model.train()
+    #     with tqdm.tqdm(batch_start, unit="batch", mininterval=0, disable=False) as bar:
+    #         bar.set_description(f"Epoch {epoch}")
+    #         for start in bar:
+    #             # take a batch
+    #             X_batch = X_train[start:start + batch_size]
+    #             y_batch = y_train[start:start + batch_size]
+    #             # forward pass
+    #             y_pred = model(X_batch)
+    #             loss = loss_fn(y_pred, y_batch)
+    #             # backward pass
+    #             optimizer.zero_grad()
+    #             loss.backward()
+    #             # update weights
+    #             optimizer.step()
+    #             # print progress
+    #             bar.set_postfix(mse=float(loss))
+    #     # evaluate accuracy at end of each epoch
+    #     model.eval()
+    #     y_pred = model(X_test)
+    #     mse = loss_fn(y_pred, y_test)
+    #     mse = float(mse)
+    #     history.append(mse)
+    #     if mse < best_mse:
+    #         best_mse = mse
+    #         best_weights = copy.deepcopy(model.state_dict())
+    #
+    # # restore model and return best accuracy
+    # model.load_state_dict(best_weights)
+    # print(f"MSE: {np.sqrt(best_mse):.2f}")
+    # plt.plot(history)
+    # plt.show()
 
