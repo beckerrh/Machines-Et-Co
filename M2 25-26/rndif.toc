@@ -1,0 +1,6 @@
+\contentsline {section}{\numberline {1}Machines et réseaux de neurones}{2}{}%
+\contentsline {section}{\numberline {2}Fonction de perte}{2}{}%
+\contentsline {section}{\numberline {3}Apprentissage}{2}{}%
+\contentsline {section}{\numberline {4}EDO et méthode de collocation}{2}{}%
+\contentsline {section}{\numberline {5}Réseaux pour les EDO}{2}{}%
+\contentsline {section}{\numberline {6}Calcul de dérivées}{2}{}%

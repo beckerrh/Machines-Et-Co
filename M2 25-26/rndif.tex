@@ -1,0 +1,103 @@
+%----------------------------------------
+\documentclass[11pt,a4paper]{article}
+%----------------------------------------
+%
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{cancel}
+
+%---------------------------------------------------------
+\newcommand{\N}{\mathbb N}
+\newcommand{\R}{\mathbb R}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\abs}[1]{\left|#1\right|} 
+\newcommand{\norm}[1]{\|#1\|}
+\newcommand{\tnorm}[1]{\||#1|\|}
+\newcommand{\scp}[2]{\langle#1,#2\rangle}
+\newcommand{\sgn}[1]{\operatorname{sgn}(#1)}
+\newcommand{\Set}[1]{\left\{#1\right\}} 
+\newcommand{\SetDef}[2]{\left\{#1\;\middle|\;#2\right\}} 
+\newcommand{\transpose}[1]{{#1}^{\mathsf{T}}} 
+\newcommand{\dn}[1]{\frac{\partial{#1}}{\partial n}} 
+\renewcommand{\div}{\operatorname{div}}
+\newcommand\Rest[2]{{% we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \vphantom{\big|} % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}% 
+%---------------------------------------------------------
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{remark}[theorem]{Remark}
+
+%---------------------------------------------------------
+\title{M2 MMS : Réseaux de neurones pour la modélisation}
+\author{}
+\date{\today}
+%---------------------------------------------------------
+
+%====================================================
+\begin{document}
+%====================================================
+
+\maketitle
+\tableofcontents
+%
+%==========================================
+\section*{Introduction}\label{sec:}
+%==========================================
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection*{Objectifs}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+\begin{itemize}
+\item Connaître les bases des machines et réseaux de neurones
+\item Savoir les utiliser dans le contexte de modèles basées sur les équations différentielles ordinaires (EDO)
+\item Savoir utiliser \texttt{pytorch}
+\end{itemize}
+%
+Chaque chapitre correspond à 1-3 cours/TP.
+%
+%==========================================
+\section{Machines et réseaux de neurones}\label{sec:}
+%==========================================
+%
+%
+%
+%==========================================
+\section{Fonction de perte}\label{sec:}
+%==========================================
+%
+%
+%
+%==========================================
+\section{Apprentissage}\label{sec:}
+%==========================================
+%
+%
+%
+%==========================================
+\section{EDO et méthode de collocation}\label{sec:}
+%==========================================
+%
+%
+%==========================================
+\section{Réseaux pour les EDO}\label{sec:}
+%==========================================
+%
+%
+%==========================================
+\section{Calcul de dérivées}\label{sec:}
+%==========================================
+%
+%
+
+%====================================================
+\bibliographystyle{siam}
+\bibliography{rndif.bib}
+\end{document}
+%===================================================
