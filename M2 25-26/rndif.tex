@@ -5,7 +5,7 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{cancel}
-
+\usepackage{stmaryrd}
 %---------------------------------------------------------
 \newcommand{\N}{\mathbb N}
 \newcommand{\R}{\mathbb R}
@@ -25,13 +25,18 @@
   #1 % the function
   \vphantom{\big|} % pretend it's a little taller at normal size
   \right|_{#2} % this is the delimiter
-  }}% 
+  }}%
+ \newcommand{\vect}[2]{\operatorname{vect}\left\{#1\;\middle|\;#2\right\}} 
+ \newcommand{\im}{\operatorname{Im}} 
+ \newcommand{\id}{\operatorname{id}} 
 %---------------------------------------------------------
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{corollary}{Corollary}[theorem]
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{algorithm}[theorem]{Algorithm}
-\newtheorem{remark}[theorem]{Remark}
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{corollary}{Corollaire}[theorem]
+\newtheorem{lemma}[theorem]{Lemme}
+\newtheorem{algorithm}[theorem]{Algorithme}
+\newtheorem{remark}[theorem]{Remarque}
+\newtheorem{definition}[theorem]{Définition}
+\newtheorem{example}[theorem]{Exemple}
 
 %---------------------------------------------------------
 \title{M2 MMS : Réseaux de neurones pour la modélisation}
@@ -67,10 +72,134 @@ Chaque chapitre correspond à 1-3 cours/TP.
 %==========================================
 %
 %
+%--------------------------------------
+\begin{definition}\label{definition:}
+Soit $m,n,n_w\in\N$. Une \textbf{machine} est une application 
+\begin{align*}
+\Phi:\R^n\times \R^{n_w}\to \R^m,\qquad (x,\tilde w)\to y = \Phi(x,\tilde w).
+\end{align*}
+\textbf{L'apprentissage} consiste à fixer $w=w_*$ de sorte que l'application $x\mapsto \Phi(x,w_*)$ permet de mieux représenter des données ou un modèle physique.
+
+On appelle $\Phi$ une \textbf{machine vectoriel}, si
+\begin{align*}
+\Phi(x,\tilde w) = \sum_{i=1}^N c_i \phi_i(x,w).
+\end{align*}
+Dans ce cas nous avons $\tilde w = (x,w)$ et $X_{\Phi}:=\im\Phi =\vect{\phi_i(x,w)}{1\le i\le N}$.
+\end{definition}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{example}\label{example:}
+Voici quelques exemples de machines vectoriels.
+\begin{itemize}
+\item L'interpolation de Lagrange d'une fonction univariée continue $f:[0;1]\to\R$ avec les points d'interpolation $0 = t_0 < \cdots < t_{i-1}<t_{i} < t_N=1$.
+\begin{align*}
+I_n f(t) = \sum_{i=0}^N c_i \phi_i(t),\quad \phi_i(t)=\prod_{j=1\atop j\ne i}^{N} \frac{t-t_j}{t_i-t_j}.
+\end{align*}
+Ici, nous avons "$w=\emptyset$".
+\item Même chose, mais avec les points d'interpolation variables, donc "$w=(t_i)$".
+\item Espace $P^1([0;1])$. Similaire au deux précédents.
+\item Espace des séries de Fourier tronquées. Similaire au précédents.
+\end{itemize}
+\end{example}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{definition}\label{definition:}
+Pour $f:\R\to \R$ on définit $f:\R^n\to\R^n$ (sans distinction de notation !) composante par composante, $\left(f(x)\right)_i = f(x_i), 1\le i\le n$. 
+
+Un \textbf{réseau à une couche} $(W,b,\sigma), W\in \R^{m\times n}, b\in \R^m$ est l'application 
+%
+\begin{equation}\label{equation:}
+\Phi(x, W,b,\sigma):\R^n\to\R^m,\qquad x \mapsto \sigma(W x + b).
+\end{equation}
+%
+Un \textbf{réseau multi-couches (MLP)} est la composition de réseau à une couche $\Phi_i=\Phi_i(W_i,b_i,\sigma_i)$, $1\le i\le L$ avec 
+%
+\begin{equation}\label{equation:}
+\Phi(x, \tilde w):\R^n\to \R^m\qquad \Phi(x, \tilde w) = \Phi_L \circ \cdots \circ \Phi_1.
+\end{equation}
+%
+Évidemment nous avons $\tilde w = (W_i,b_i)_{1\le i\le L}$ et
+\begin{align*}
+W_i\in \R^{n_i\times n_{i-1}},\quad b_i\in \R^{n_i},\quad n_0=n,\quad n_L = m.
+\end{align*}
+\end{definition}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{remark}\label{remark:}
+Un MLP est une machine vectoriel, si $b_L=0$ et $\sigma_L=\id$. Nous avons $N=n_{L-1}$. 
+\end{remark}
+%--------------------------------------
+%
+%
 %
 %==========================================
 \section{Fonction de perte}\label{sec:}
 %==========================================
+%
+%
+%--------------------------------------
+\begin{definition}\label{definition:}
+On appelle \textbf{données} (\textit{data}) un ensemble $\mathcal D=(x_i,y_i)_{1\le i\le d}$, $x_i\in\R^n$, $y\in \R^m$.
+\end{definition}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{definition}\label{definition:}
+On appelle \textbf{fonction de perte} (\textit{loss}) une fonction $l:\R^m\times \R^m\to \R$ et l'\textbf{apprentissage} (\textit{learning}) est 
+le problème de minimisation
+%
+\begin{equation}\label{equation:}
+\min\SetDef{l(w,\mathcal D)}{w\in \R^p},\quad l(w,\mathcal D) = \sum_{i=1}^d l(\Phi(x_i,w),y_i).
+\end{equation}
+%
+\end{definition}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{example}\label{example:}
+\begin{itemize}
+\item (moindre carrés, $l^2$) $l(z,y)= \frac12\norm{y-z}^2$.
+\item ($l^1$) $l(z,y)= \norm{y-z}_{l^1(\R^m)}$.
+\end{itemize}
+\end{example}
+%--------------------------------------
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Classification binaire}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+\begin{equation}\label{equation:}
+y_i \in \Set{-1,+1}.
+\end{equation}
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Classification}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+\begin{equation}\label{equation:}
+y_i \in \llbracket 1,\cdots, n_c\rrbracket.
+\end{equation}
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Moindre carré}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+\begin{equation}\label{equation:}
+l(z,y)= \frac12\norm{y-z}^2.
+\end{equation}
 %
 %
 %
@@ -78,11 +207,144 @@ Chaque chapitre correspond à 1-3 cours/TP.
 \section{Apprentissage}\label{sec:}
 %==========================================
 %
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Méthode de gradient}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Différentation automatique}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Apprentissage par étape}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
 %
 %
 %==========================================
 \section{EDO et méthode de collocation}\label{sec:}
 %==========================================
+%
+On considère $U\subset \R^n$ ouvert, $u_0\in U$ et une fonction $f\in C^1(U,\R^n)$. L'équation différentielle ordinaire (EDO) d'ordre un autonome
+%
+\begin{equation}\label{equation:EDO}
+\left\{
+\begin{aligned}
+\frac{du}{dt} = f(u)\\
+u(0) = u_0.
+\end{aligned}
+\right.
+\end{equation}
+%
+On rappelle le théorème de Cauchy-Lipschitz. S'il existe $r>0$ et $L>0$ tel que
+%
+\begin{equation}\label{equation:CondLip}
+\norm{f(u)-f(v)}\le L\norm{u-v}\quad \forall u,v\in U\cap B_r(u_0),
+\end{equation}
+%
+alors il existe $T>0$ une solution unique de \eqref{equation:EDO} sur $[0,T]$. $f\in C^1(U,\R^n)$ est suffisant pour \eqref{equation:CondLip}.
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Méthode de collocation}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Une méthode de collocation sur un intervalle $I=[0;T]$ consiste à choisir un espace $X_n\subset C^1(I,\R^n)$ de dimension $N+1$ et des points (maillage)
+%
+\begin{equation}\label{equation:Mesh}
+0 = t_0 < t_1 < \cdots < t_N = T
+\end{equation}
+%
+et imposer les équations à une fonction $u_N\in X_N$
+%
+\begin{equation}\label{equation:Collocation}
+u_N(0) = u_0,\quad \frac{du_N}{dt}(t_i) = f(u_N(t_i))\quad 1\le i\le N.
+\end{equation}
+%
+Soit $(\phi_j)_{0\le j\le N}$ une base de $X_N$. \eqref{equation:Collocation} est alors converti en un système algébrique pour les coefficient $c\in\R^{N+1}$
+\begin{align*}
+u_N(t) = \sum_{j=0}^N c_j \phi_j(t),\quad \sum_{j=0}^N c_j \phi_j(0) = u_0,\quad \sum_{j=0}^N c_j\frac{d\phi_j}{dt}(t_i) = f(\sum_{j=0}^N c_j \phi_j(t)).
+\end{align*}
+%
+%
+%--------------------------------------
+\begin{example}\label{example:}
+Pour $X_N = B^1(I)$, l'espace des spline quadratique de classe $C^1$ sur le \textbf{même} maillage $(t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson.
+\end{example}
+%--------------------------------------
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Fonction loss}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Une première idée est d'utiliser un espace $\tilde X=X_{\Phi}$ généré par une machine vectorielles $\Phi$ est d'utiliser la fonction perte
+\begin{align*}
+\frac12\norm{\tilde u(0)-u_0}^2 + \sum_{i=0}^N \frac12\norm{\frac{d\tilde u}{dt}(t_i) - f(\tilde u(t_i)}^2
+\end{align*}
+Il est alors facile de rajouter un term avec des données (PINN) $\mathcal D=(\tilde t_k, \tilde w_k)$ (mesures expermientales)
+\begin{align*}
+l_{\rm PINN}(\tilde u) = \frac12\norm{\tilde u(0)-u_0}^2 + \sum_{i=0}^N \frac12\norm{\frac{d\tilde u}{dt}(t_i) - f(\tilde u(t_i)}^2 + \sum_{k=1}^d \frac12\norm{\tilde u(\tilde t_k) - \tilde w_k}^2
+\end{align*}
+%
+%
+%--------------------------------------
+\begin{remark}\label{remark:}
+Dans le cas sans données ($d=0$), si le MLP produit $B^1(I)$, la machine produit la solution de Crank-Nicolson. Une difficulté est 
+le conditionnement du problème.
+\end{remark}
+%--------------------------------------
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{EDO avec paramètres}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Dans la pratique, les modèles mathématiques contiennent des paramètres (physique ou non). Soit $n_p\in\N$ et $p=(p_0,p_1)\in \R^{n_p}$ et
+%
+\begin{equation}\label{equation:EDOParam}
+\left\{
+\begin{aligned}
+\frac{du}{dt} = f(u,p_1)\\
+u(0) = u_0(p_0).
+\end{aligned}
+\right.
+\end{equation}
+%
+Nous avons alors une application
+%
+\begin{equation}\label{equation:SolutionOp}
+S:\R^{n_p}\to C^1(I,\R^n)\qquad p \to u(p).
+\end{equation}
+%
+%
+Des questions typiques sont
+\begin{itemize}
+\item Déterminer des paramètres à partir de mesures.
+\item Plus modestement : déterminer la sensibilité des solution par rapport aux paramètre.
+\item Plus ambitieux : déterminer les mesures les plus importantes.
+\item Dans un autre registre : trouver des valeurs critiques des paramètre. Les valeurs critiques sont celles quand la solution $p\to u(p)$ change de comportement, par exemple des points de bifurcation.
+\end{itemize}
+%
+La clé à toutes ces questions est l'étude de l'application $S$ définie en \eqref{equation:SolutionOp}. 
+Si elle est différentiable nous avons
+%
+\begin{equation}\label{equation:}
+\left\{
+\begin{aligned}
+u:= S(p), \quad \delta u := S'(p)(\delta p)\\
+%
+\left\{
+\begin{aligned}
+\frac{d\delta u}{dt} = f'_u(u,p_1)\delta u + f'_p(u,p_1)\delta p_1\\
+\delta u(0) = u_0'(p_0)(\delta p_0).
+\end{aligned}
+\right.
+%
+\end{aligned}
+\right.
+\end{equation}
 %
 %
 %==========================================

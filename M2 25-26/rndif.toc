@@ -1,6 +1,15 @@
 \contentsline {section}{\numberline {1}Machines et réseaux de neurones}{2}{}%
-\contentsline {section}{\numberline {2}Fonction de perte}{2}{}%
-\contentsline {section}{\numberline {3}Apprentissage}{2}{}%
-\contentsline {section}{\numberline {4}EDO et méthode de collocation}{2}{}%
-\contentsline {section}{\numberline {5}Réseaux pour les EDO}{2}{}%
-\contentsline {section}{\numberline {6}Calcul de dérivées}{2}{}%
+\contentsline {section}{\numberline {2}Fonction de perte}{3}{}%
+\contentsline {subsection}{\numberline {2.1}Classification binaire}{3}{}%
+\contentsline {subsection}{\numberline {2.2}Classification}{3}{}%
+\contentsline {subsection}{\numberline {2.3}Moindre carré}{3}{}%
+\contentsline {section}{\numberline {3}Apprentissage}{3}{}%
+\contentsline {subsection}{\numberline {3.1}Méthode de gradient}{3}{}%
+\contentsline {subsection}{\numberline {3.2}Différentation automatique}{3}{}%
+\contentsline {subsection}{\numberline {3.3}Apprentissage par étape}{3}{}%
+\contentsline {section}{\numberline {4}EDO et méthode de collocation}{3}{}%
+\contentsline {subsection}{\numberline {4.1}Méthode de collocation}{4}{}%
+\contentsline {subsection}{\numberline {4.2}Fonction loss}{4}{}%
+\contentsline {subsection}{\numberline {4.3}EDO avec paramètres}{4}{}%
+\contentsline {section}{\numberline {5}Réseaux pour les EDO}{5}{}%
+\contentsline {section}{\numberline {6}Calcul de dérivées}{5}{}%
