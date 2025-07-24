@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 # Problem parameters
 np.random.seed(42)
-n = 5       # Dimension
-m = 10      # Number of terms
+n = 10       # Dimension
+m = 20      # Number of terms
 mu = 0.05   # Smoothing parameter
 sigma = 1.0 # Regularization coefficient
 M = 2 / mu  # Cubic parameter from paper
