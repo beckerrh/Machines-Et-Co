@@ -7,6 +7,9 @@
 \usepackage{cancel}
 \usepackage{stmaryrd}
 %---------------------------------------------------------
+\newcommand{\nparammodel}{n_W}
+\newcommand{\ndata}{n_D}
+\newcommand{\ndataall}{n_D^*}
 \newcommand{\N}{\mathbb N}
 \newcommand{\R}{\mathbb R}
 \newcommand{\eps}{\varepsilon}
@@ -56,16 +59,33 @@
 %==========================================
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection*{Objectifs}\label{subsec:}
+\subsection*{Objectifs du cours}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
 \begin{itemize}
 \item Connaître les bases des machines et réseaux de neurones
 \item Savoir les utiliser dans le contexte de modèles basées sur les équations différentielles ordinaires (EDO)
-\item Savoir utiliser \texttt{pytorch}
+\item Savoir utiliser des librairies de l'IA en python.
 \end{itemize}
 %
 Chaque chapitre correspond à 1-3 cours/TP.
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection*{Librairies}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+\begin{itemize}
+\item \texttt{tensorflow}
+\item \texttt{pytorch}
+\item \texttt{jax} (avec \texttt{Flax} et \texttt{Optax})
+\end{itemize}
+%
+Prérequis
+\begin{itemize}
+\item Les base de \texttt{python}
+\item \texttt{list}, \texttt{dict}, \texttt{class}
+\item \texttt{numpy}
+\end{itemize}
 %
 %==========================================
 \section{Machines et réseaux de neurones}\label{sec:}
@@ -74,9 +94,9 @@ Chaque chapitre correspond à 1-3 cours/TP.
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
-Soit $m,n,n_w\in\N$. Une \textbf{machine} est une application 
+Soit $m,n,\nparammodel\in\N$. Une \textbf{machine} est une application 
 \begin{align*}
-\Phi:\R^n\times \R^{n_w}\to \R^m,\qquad (x,\tilde w)\to y = \Phi(x,\tilde w).
+\Phi:\R^n\times \R^{\nparammodel}\to \R^m,\qquad (x,\tilde w)\to y = \Phi(x,\tilde w).
 \end{align*}
 \textbf{L'apprentissage} consiste à fixer $w=w_*$ de sorte que l'application $x\mapsto \Phi(x,w_*)$ permet de mieux représenter des données ou un modèle physique.
 
@@ -84,7 +104,15 @@ On appelle $\Phi$ une \textbf{machine vectoriel}, si
 \begin{align*}
 \Phi(x,\tilde w) = \sum_{i=1}^N c_i \phi_i(x,w).
 \end{align*}
-Dans ce cas nous avons $\tilde w = (x,w)$ et $X_{\Phi}:=\im\Phi =\vect{\phi_i(x,w)}{1\le i\le N}$.
+Dans ce cas nous avons $\tilde w = (c,w)$ et $X_{\Phi}:=\im\Phi =\vect{\phi_i(x,w)}{1\le i\le N}$.
+Les fonction $\phi_i^{w} : x\mapsto \phi_i(x,w)$ peuvent former une base ou non. On les appelle souvent base par abus de langage. 
+Nous avons alors une application
+%
+\begin{equation}\label{equation:}
+\R^{\nparammodel}\to \Set{\mbox{fct:} \R^n\to \R^m}^N\quad w\mapsto (\phi_i^{w})_{1\le i\le N}
+\end{equation}
+%
+%
 \end{definition}
 %--------------------------------------
 %
@@ -108,6 +136,20 @@ Ici, nous avons "$w=\emptyset$".
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
+On appelle \textbf{fonction d'activation} une fonction $\sigma:\R\to\R$.
+\begin{enumerate}
+\item Sigmoide $\sigma(x) = \frac{1}{1+e^x}$, \quad $\sigma(\R) \subset ]0;1[$.
+\item Tanh $\sigma(x) = \tanh(x) = \frac{e^x-e^{-x}}{e^x+e^{-x}}$, \quad $\sigma(\R) \subset ]-1;1[$.
+\item ReLU $\sigma(x) = x^+ = \max\Set{0,x}$, \quad $\sigma(\R) \subset ]-1;1[$.
+\item Id $\sigma(x) = x$, \quad $\sigma(\R) =\R$.
+\end{enumerate}
+Plein d'autres son possible. Attention : l'image de $\sigma$ est important.
+\end{definition}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{definition}\label{definition:}
 Pour $f:\R\to \R$ on définit $f:\R^n\to\R^n$ (sans distinction de notation !) composante par composante, $\left(f(x)\right)_i = f(x_i), 1\le i\le n$. 
 
 Un \textbf{réseau à une couche} $(W,b,\sigma), W\in \R^{m\times n}, b\in \R^m$ est l'application 
@@ -126,6 +168,8 @@ Un \textbf{réseau multi-couches (MLP)} est la composition de réseau à une cou
 \begin{align*}
 W_i\in \R^{n_i\times n_{i-1}},\quad b_i\in \R^{n_i},\quad n_0=n,\quad n_L = m.
 \end{align*}
+%
+Nous appelons plu généralement \textbf{machine} 
 \end{definition}
 %--------------------------------------
 %
@@ -136,7 +180,87 @@ Un MLP est une machine vectoriel, si $b_L=0$ et $\sigma_L=\id$. Nous avons $N=n_
 \end{remark}
 %--------------------------------------
 %
+Voici quelques types de couches.
 %
+\begin{itemize}
+\item 'Linear layer avec poids ('weight') $W$ et biais ('bias') $b$'. $x \mapsto W x + b$.
+\item 'Activation layer'. $x \mapsto \sigma(x)$.
+\item 'Convolutional layer'. Une convolution s'écrite comme une multiplication matrice-vecteur :
+\begin{align*}
+\textbf{(1D)}\quad y_i = \sum_{k=-m}^m w_k x_{i+k},\quad \textbf{(2D)}\quad y(i,j) = \sum_{k=-m}^m\sum_{l=-m}^m w(k,l) x(i+k, j+l).
+\end{align*}
+
+\item 'Residual layer' $\Phi:\R^n\to\R^n$, $\Phi(x) = x +\sigma(W x + b)$
+\item 'Attention layer' : $\Phi(x) = {\rm softmax}\left(n^{-1/2} K \transpose{Q}\right)V$ ($K,Q,V\in\R^{n\times n}$)
+\begin{align*}
+{\rm softmax}_{\beta}: \R^n\to]0;1[^n\quad x\mapsto \left(\frac{e^{\beta x_i}}{\sum_{j=1}^n e^{\beta x_j}}\right)_{1\le i\le n}.
+\end{align*}
+C'est le gradient de  ${\rm logsumexp}_{\beta}: \R^n\to\R,\quad x\mapsto \beta\log\left(\sum_{j=1}^n e^{\beta x_j}\right)$
+\item 'Dropout layer' Il s'agit de réduire le nombre de paramètre, notamment pou la matrice $W$
+\item 'Implicit layer' Ici $\Phi$ correspond à la solution d'une équation, par exemple une équation différentielle.
+\item 'SVM' exemple d'un problème d'optimisation
+\end{itemize}
+%
+%==========================================
+\section{Pourquoi construire des machines ?}\label{sec:}
+%==========================================
+%
+\begin{itemize}
+\item Expliquer les relatons entre $x$ et $y$ : dans le cas unidimensionnel, on interprète de façon géométrique et algébrique $y=a x$ ou $y=x^2$.
+\item Prédire le résultat $y$ associé à un $x$.
+\end{itemize}
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Différentes classes de problèmes}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+\begin{itemize}
+%
+\item \textbf{Classification (classement)}
+\begin{itemize}
+\item binaire : il y seulement deux caractéristiques (que l'on peut appeler 0 et 1, $y\in\Set{0,1}$ ou -1 et +1) : chat ou chien, appareil fonctionne ou pas, passager survit à la catastrophe du \textit{Titanic},...
+\item classes multiples ('pattern recognition'): reconnaître un chiffre donné $y\in\Set{0,1,\cdots,9}$, différents types de vélos,...
+\end{itemize}
+%
+\item \textbf{Régression} : $y\in\R$ dans le cas scalaire. Étant donné $(x_i,y_i)_{1\le i\le \ndata}$ on cherche $f$ tel que
+\begin{align*}
+l(f) := \frac{1}{2\ndata}\sum_{i=1}^{\ndata}\left(y_i - f(x_i)\right)^2
+\end{align*}
+%
+soit le plus petit possible. Ce problème dépend de la classe de fonction $f\in\mathcal F$. Si $\mathcal F$ est assez grand nous nous rappelons 
+que $l(f_{\rm lag})=0$ pour le polynôme d'interpolation de Lagrange $f_{\rm lag}$, car interpolation signifie $y_i=f(x_i)$.
+On se rappelle également que ce processus est instable pour $\ndata\to+\infty$ (et même $\ndata\approx 10$, phénomène de Runge).
+%
+On s'intéresse plutôt à une classe $\mathcal F$ avec peu de paramètre. Par exemple Gau{\ss} avait pris 
+$\mathcal F=\SetDef{x\mapsto a + bx}{a,b\in\R}$, ce qui permet une interprétation des paramètres.
+%
+\item \textbf{Simplification de modèle} : étant donné un modèle compliqué $\Phi^*$ que l'on ne peut évaluer, on cherche une approximation $\Phi$. Pour l'exemple d'une EDO nonlinéaire \eqref{equation:EDO} 
+\begin{align*}
+\Phi^* : U\subset\R^n \to C^1(I, \R^n),\quad \Phi^*(u_0) = \mbox{solution de \eqref{equation:EDO} sur l'intervalle $I$}
+\end{align*}
+Premièrement, $\Phi^*$ ne prend pas des valeurs en un espace de dimension finie. Deuxièmement, on ne connaît pas $\Phi^*(u_0)(t)$ pour un temps $t\in I$. On est obligé de calculer une approximation par une méthode numérique. Et on peut utiliser un réseaux de neuronnes, qui devient alors une méthode numérique. Il y a différentes technique qui rentre dans cette catégorie
+\begin{itemize}
+%
+\item \textbf{Méthodes de Galerkine} (Séries de Fourier, FEM, ondelettes, méthodes spectrales) où l'on construit des fonctions de base appropriée pour le modèle en question. Ces méthodes dépendent de paramètre. Dans le cas des séries de Fourier il s'agit des indices que l'on utilise et dans le cas de la FEM, il s'agit par exemple du maillage. Depuis longtemps il existe des algorithmes qui cherche à optimiser ces paramètre (méthodes adaptatives) en fonction de la 'solution' $\Phi^*(u_0)$. Il s'agit de l'approximation non-linéaire. 
+
+Une caractéristique des méthode de Galerkine est que les coefficients sont obtenus par la résolution d'un système d'équations nonlinéaires.
+Dans les réseaux de neuronne, même si la machine est vectoriel, on minimise une fonction perte.  
+%
+\item \textbf{Méthode de réduction de modèle}, POD où on essaie d'extraire l'information essentielle pour construire une base adaptée. Ces méthodes sont souvent combinées avec une méthode de Galerkine.
+\end{itemize}
+%
+\item \textbf{Mélange de régression et simplification}. Si nous avons un modèle $\Phi^*$ et des observations (données), on peut facilement combiner les deux si le problème d'apprentissage est une minimisation : il suffit de rajouter une mesure des écarts entre modèle et observations à la fonction à minimiser (la perte). Cela est souvent utilisé comme argument en faveur des réseauw de neuronnes. 
+Toutefois, minimiser la somme de deux fonctions $f$ et $g$ dépend d'une pondération que l'on donne et peut être très différent des autres problèmes qui se posent naturellement
+\begin{align*}
+\left\{
+\begin{aligned}
+\min\SetDef{f(x)+\alpha g(x)}{x\in\R^n},\\ 
+\min\SetDef{f(x)}{x\in\R^n\cap\Set{\norm{g(x)}\le \eps}},\\
+\min\SetDef{g(x)}{x\in\R^n\cap\Set{\norm{f(x)}\le \delta}}.
+\end{aligned}
+\right.
+\end{align*}
+\end{itemize}
 %
 %==========================================
 \section{Fonction de perte}\label{sec:}
@@ -145,18 +269,25 @@ Un MLP est une machine vectoriel, si $b_L=0$ et $\sigma_L=\id$. Nous avons $N=n_
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
-On appelle \textbf{données} (\textit{data}) un ensemble $\mathcal D=(x_i,y_i)_{1\le i\le d}$, $x_i\in\R^n$, $y\in \R^m$.
+On appelle \textbf{données} (\textit{data}) un ensemble $\mathcal D=(x_i,y_i)_{1\le i\le \ndata}$, $x_i\in\R^n$, $y\in \R^m$. 
+Alors $\mathcal D\subset \R^{\ndataall} \approx \left(\R^n\times \R^m\right)^{\ndata}$. 
+Souvent, on partage les données en données d'apprentissage et données de test (et éventuellement données de validation).
 \end{definition}
 %--------------------------------------
 %
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
-On appelle \textbf{fonction de perte} (\textit{loss}) une fonction $l:\R^m\times \R^m\to \R$ et l'\textbf{apprentissage} (\textit{learning}) est 
-le problème de minimisation
+On appelle \textbf{fonction de perte} (\textit{loss}) une fonction $\widetilde{L}:\R^{\nparammodel}\times\R^{\ndataall}\to \R$ dont la minimisation est l'\textbf{apprentissage} (\textit{learning}). On suppose avoir $L:\R^m\times \R^m\to \R$ telle que
 %
 \begin{equation}\label{equation:}
-\min\SetDef{l(w,\mathcal D)}{w\in \R^p},\quad l(w,\mathcal D) = \sum_{i=1}^d l(\Phi(x_i,w),y_i).
+\widetilde{L}(w,\mathcal D) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} L(\Phi(x_i,w),y_i).
+\end{equation}
+%
+Le problème d'apprentissage est alors la minimisation de $\widehat{L}:\R^{\nparammodel}\to\R$
+%
+\begin{equation}\label{equation:}
+\min\SetDef{\widehat{L}(w)}{w\in \R^p},\quad \widehat{L}(w) = \widetilde{L}(w,\mathcal D).
 \end{equation}
 %
 \end{definition}
@@ -164,21 +295,51 @@ le problème de minimisation
 %
 %
 %--------------------------------------
+\begin{remark}\label{remark:}
+On peut avoir une régularisation $\widehat{L}(w) = \widetilde{L}(w,\mathcal D) + \frac{\alpha}{2}\norm{w-w_0}^2$ avec $w_0$ des valeurs données de paramètre du modèle, ou, encore plus complexe, des contraintes sur les paramètres du modèle.
+\end{remark}
+%--------------------------------------
+%
+%
+%--------------------------------------
 \begin{example}\label{example:}
 \begin{itemize}
-\item (moindre carrés, $l^2$) $l(z,y)= \frac12\norm{y-z}^2$.
-\item ($l^1$) $l(z,y)= \norm{y-z}_{l^1(\R^m)}$.
+\item (moindre carrés, $l^2$) $L(z,y)= \frac12\norm{y-z}^2$.
+\item ($l^1$) $L(z,y)= \norm{y-z}_{l^1(\R^m)}$.
 \end{itemize}
 \end{example}
 %--------------------------------------
+%
+On rappelle les notations du calcul différentiel. $F:\R^n\to\R^m$ est différentiable en $x$ s'il existe $A\in\R^{m\times n}$ tel que 
+\begin{align*}
+\lim_{h\to 0\atop h\ne0}\frac{\norm{R(x,h)}}{\norm{h}} = 0\quad \left(R(x,h) := F(x+h)-F(x) - Ah\right),\quad F'(x) := A.
+\end{align*}
+($F'(x)= Df(x)$ est plus simple à écrire).
+Dans le cas $m=1$ on écrit $\nabla f(x) := \transpose{f'(x)}$. Pour des fonctions de plusieurs variables, par exemple $F(x,z)$ on écrit 
+$F'_x(x,z)$ et $F'_z(x,z)$ pour les dérivées  "partielles".
+
+Par les théorèmes du calcul différentiel nous avons.
+%
+%--------------------------------------
+\begin{theorem}\label{theorem:}
+Si $L$ et $\Phi$ sont de continûment différentiables, alors   $\widetilde{L}\in C^1(\R^{\nparammodel})$, le gradient de $\widetilde{L}$ s'écrit
+%
+\begin{equation}\label{equation:}
+\nabla  \widetilde{L}(w) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} \transpose{\Phi'_w(x_i,w)}\nabla_z L(\Phi(x_i,w),y_i)
+\end{equation}
+%
+\end{theorem}
+%--------------------------------------
+%
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Classification binaire}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
+On utilise souvent 'binary cross entropy' (si la dernière couche finit avec une sigmoïde)
 %
 \begin{equation}\label{equation:}
-y_i \in \Set{-1,+1}.
+y_i \in \Set{-1,+1},\quad l(x) := -\frac{1}{\ndata}\sum_{i=1}^{\ndata} y_i\log(z_i)+(1-y_i)\log(1-z_i);\quad z_i = \Phi(x_i,w)
 \end{equation}
 %
 %
@@ -186,9 +347,10 @@ y_i \in \Set{-1,+1}.
 \subsection{Classification}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
+Avec $n_C$ classes, $y_{ij}\ge0 $, $\sum_{j=1}^{n_C}y_{ij}=1$ pour tout $i$.
 %
 \begin{equation}\label{equation:}
-y_i \in \llbracket 1,\cdots, n_c\rrbracket.
+y_i \in \llbracket 1,\cdots, n_c\rrbracket \quad l(x) := -\frac{1}{\ndata}\sum_{i=1}^{\ndata}\sum_{j=1}^{n_C} y_{ij}\log(z_{ij});\quad z_{ij} = \Phi(x_i,w)
 \end{equation}
 %
 %
@@ -198,14 +360,57 @@ y_i \in \llbracket 1,\cdots, n_c\rrbracket.
 %
 %
 \begin{equation}\label{equation:}
-l(z,y)= \frac12\norm{y-z}^2.
+l(x)= \frac12\sum_{i=1}^m \abs{y_i-\Phi(x_i,w)}^2.
 \end{equation}
 %
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Remarques}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Il y a une certaine ambiguïté dans nos définition de couches et de fonction de perte : on peut intégrer les dernières couches dans la fonction de parte.
+%
+%
+%--------------------------------------
+\begin{theorem}\label{theorem:}
+Si la machine contient une couche de la forme $x\to \sigma(Wx+b)$, on peut modifier la fonction de perte telle que la machine est vectorielle.
+\end{theorem}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{proof}
+On écrite $x\mapsto\Phi(x,W,b) = \sigma(Wx+b)$ comme $\Phi_2 \circ \Phi_1$ avec $x\mapsto \Phi_1(x,W) = Wx$ et $y\mapsto\Phi_2(y,b) = \sigma(y+b)$. On a alors
+\begin{align*}
+L(\Phi(x,W,b), y) = L_2(\Phi_1(x,W),y),\quad L_2 (x,y) := L(\Phi_2(x),y).
+\end{align*}
+\end{proof}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{example}\label{example:}
+Pour les problème de classification on utilise généralement la fonction logistique.
+\end{example}
+%--------------------------------------
 %
 %
 %==========================================
 \section{Apprentissage}\label{sec:}
 %==========================================
+%
+%
+%--------------------------------------
+\begin{definition}\label{definition:}
+Un problème d'apprentissage de machine 'machine learning' consiste en trois ingrédients
+\begin{itemize}
+\item Une machine $\Phi(x,w)$
+\item Une fonction de perte (ce qui implique généralement les données et pratiquement leur traitement)
+\item Un algorithme d'optimisation (y compris critère d'arrêt).
+\end{itemize}
+\end{definition}
+%--------------------------------------
+%
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Méthode de gradient}\label{subsec:}
@@ -214,6 +419,11 @@ l(z,y)= \frac12\norm{y-z}^2.
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Différentation automatique}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Machine vectoriel}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
 %
