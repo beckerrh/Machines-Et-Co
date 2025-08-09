@@ -98,18 +98,18 @@ Soit $m,n,\nparammodel\in\N$. Une \textbf{machine} est une application
 \begin{align*}
 \Phi:\R^n\times \R^{\nparammodel}\to \R^m,\qquad (x,\tilde w)\to y = \Phi(x,\tilde w).
 \end{align*}
-\textbf{L'apprentissage} consiste à fixer $w=w_*$ de sorte que l'application $x\mapsto \Phi(x,w_*)$ permet de mieux représenter des données ou un modèle physique.
+\textbf{L'apprentissage} consiste à fixer $w=w_*$ de sorte que l'application $x\mapsto \Phi(x,w_*)$ permet de représenter des données ou un modèle physique.
 
 On appelle $\Phi$ une \textbf{machine vectoriel}, si
 \begin{align*}
 \Phi(x,\tilde w) = \sum_{i=1}^N c_i \phi_i(x,w).
 \end{align*}
 Dans ce cas nous avons $\tilde w = (c,w)$ et $X_{\Phi}:=\im\Phi =\vect{\phi_i(x,w)}{1\le i\le N}$.
-Les fonction $\phi_i^{w} : x\mapsto \phi_i(x,w)$ peuvent former une base ou non. On les appelle souvent base par abus de langage. 
-Nous avons alors une application
+Les fonction $\phi_i^{w} : x\mapsto \phi_i(x,w)$ peuvent former une base ou non. On les appelle souvent 'features' en anglais, ou un "dictionnaire de fonctions de base". 
+Nous avons alors une application ('feature map')
 %
 \begin{equation}\label{equation:}
-\R^{\nparammodel}\to \Set{\mbox{fct:} \R^n\to \R^m}^N\quad w\mapsto (\phi_i^{w})_{1\le i\le N}
+\R^{\nparammodel}\to \Set{\R^n\to \R^m}^N\quad w\mapsto (\phi_i^{w})_{1\le i\le N}
 \end{equation}
 %
 %
@@ -128,7 +128,7 @@ I_n f(t) = \sum_{i=0}^N c_i \phi_i(t),\quad \phi_i(t)=\prod_{j=1\atop j\ne i}^{N
 Ici, nous avons "$w=\emptyset$".
 \item Même chose, mais avec les points d'interpolation variables, donc "$w=(t_i)$".
 \item Espace $P^1([0;1])$. Similaire au deux précédents.
-\item Espace des séries de Fourier tronquées. Similaire au précédents.
+\item Espace des séries de Fourier tronquées. Similaire aux précédents.
 \end{itemize}
 \end{example}
 %--------------------------------------
@@ -140,10 +140,11 @@ On appelle \textbf{fonction d'activation} une fonction $\sigma:\R\to\R$.
 \begin{enumerate}
 \item Sigmoide $\sigma(x) = \frac{1}{1+e^x}$, \quad $\sigma(\R) \subset ]0;1[$.
 \item Tanh $\sigma(x) = \tanh(x) = \frac{e^x-e^{-x}}{e^x+e^{-x}}$, \quad $\sigma(\R) \subset ]-1;1[$.
-\item ReLU $\sigma(x) = x^+ = \max\Set{0,x}$, \quad $\sigma(\R) \subset ]-1;1[$.
+\item ReLU $\operatorname{relu}(x) = x^+ = \max\Set{0,x}$, \quad $\sigma(\R) \subset ]-1;1[$.
+\item Swish $\operatorname{swish}(x) = x\sigma(\beta x)$, \quad $\sigma(\R) \subset ]-1;1[$.
 \item Id $\sigma(x) = x$, \quad $\sigma(\R) =\R$.
 \end{enumerate}
-Plein d'autres son possible. Attention : l'image de $\sigma$ est important.
+Plein d'autres son possible. Attention : l'image de $\sigma$ est importante.
 \end{definition}
 %--------------------------------------
 %
@@ -152,13 +153,13 @@ Plein d'autres son possible. Attention : l'image de $\sigma$ est important.
 \begin{definition}\label{definition:}
 Pour $f:\R\to \R$ on définit $f:\R^n\to\R^n$ (sans distinction de notation !) composante par composante, $\left(f(x)\right)_i = f(x_i), 1\le i\le n$. 
 
-Un \textbf{réseau à une couche} $(W,b,\sigma), W\in \R^{m\times n}, b\in \R^m$ est l'application 
+Un \textbf{réseau à une couche ('perceptron')} $(W,b,\sigma), W\in \R^{m\times n}, b\in \R^m$ est l'application 
 %
 \begin{equation}\label{equation:}
 \Phi(x, W,b,\sigma):\R^n\to\R^m,\qquad x \mapsto \sigma(W x + b).
 \end{equation}
 %
-Un \textbf{réseau multi-couches (MLP)} est la composition de réseau à une couche $\Phi_i=\Phi_i(W_i,b_i,\sigma_i)$, $1\le i\le L$ avec 
+Un \textbf{réseau multi-couches (MLP, 'multi-layer-perceptron')} est la composition de réseau à une couche $\Phi_i=\Phi_i(W_i,b_i,\sigma_i)$, $1\le i\le L$ avec 
 %
 \begin{equation}\label{equation:}
 \Phi(x, \tilde w):\R^n\to \R^m\qquad \Phi(x, \tilde w) = \Phi_L \circ \cdots \circ \Phi_1.
@@ -169,14 +170,15 @@ Un \textbf{réseau multi-couches (MLP)} est la composition de réseau à une cou
 W_i\in \R^{n_i\times n_{i-1}},\quad b_i\in \R^{n_i},\quad n_0=n,\quad n_L = m.
 \end{align*}
 %
-Nous appelons plu généralement \textbf{machine} 
+Nous appelons plus généralement \textbf{machine} 
 \end{definition}
 %--------------------------------------
 %
 %
 %--------------------------------------
 \begin{remark}\label{remark:}
-Un MLP est une machine vectoriel, si $b_L=0$ et $\sigma_L=\id$. Nous avons $N=n_{L-1}$. 
+Un MLP est une machine vectoriel, si $\sigma_L=\id$. Nous avons $N=n_{L-1}$, si $b_L=0$ et  $N=n_{L}$ sinon.
+Le fait d'avoir un biais $b_L\ne0$ rajoute la fonction de base $\phi_0=1$, donc, dans ce cas $b_L$ joue aussi le rôle d'un coefficient.
 \end{remark}
 %--------------------------------------
 %
@@ -185,7 +187,7 @@ Voici quelques types de couches.
 \begin{itemize}
 \item 'Linear layer avec poids ('weight') $W$ et biais ('bias') $b$'. $x \mapsto W x + b$.
 \item 'Activation layer'. $x \mapsto \sigma(x)$.
-\item 'Convolutional layer'. Une convolution s'écrite comme une multiplication matrice-vecteur :
+\item 'Convolutional layer'. Une convolution s'écrit comme une multiplication matrice-vecteur :
 \begin{align*}
 \textbf{(1D)}\quad y_i = \sum_{k=-m}^m w_k x_{i+k},\quad \textbf{(2D)}\quad y(i,j) = \sum_{k=-m}^m\sum_{l=-m}^m w(k,l) x(i+k, j+l).
 \end{align*}
@@ -196,9 +198,9 @@ Voici quelques types de couches.
 {\rm softmax}_{\beta}: \R^n\to]0;1[^n\quad x\mapsto \left(\frac{e^{\beta x_i}}{\sum_{j=1}^n e^{\beta x_j}}\right)_{1\le i\le n}.
 \end{align*}
 C'est le gradient de  ${\rm logsumexp}_{\beta}: \R^n\to\R,\quad x\mapsto \beta\log\left(\sum_{j=1}^n e^{\beta x_j}\right)$
-\item 'Dropout layer' Il s'agit de réduire le nombre de paramètre, notamment pou la matrice $W$
+\item 'Dropout layer' Il s'agit de réduire le nombre de paramètres de la matrice $W$.
 \item 'Implicit layer' Ici $\Phi$ correspond à la solution d'une équation, par exemple une équation différentielle.
-\item 'SVM' exemple d'un problème d'optimisation
+\item 'SVM' exemple d'un problème d'optimisation, aussi 'implicit'.
 \end{itemize}
 %
 %==========================================
@@ -206,7 +208,7 @@ C'est le gradient de  ${\rm logsumexp}_{\beta}: \R^n\to\R,\quad x\mapsto \beta\l
 %==========================================
 %
 \begin{itemize}
-\item Expliquer les relatons entre $x$ et $y$ : dans le cas unidimensionnel, on interprète de façon géométrique et algébrique $y=a x$ ou $y=x^2$.
+\item Expliquer les relatons entre $x$ et $y$ : dans le cas unidimensionnel, on interprète de façon géométrique et algébrique $y=a x$ ou $y=bx^2$.
 \item Prédire le résultat $y$ associé à un $x$.
 \end{itemize}
 %
@@ -241,16 +243,16 @@ $\mathcal F=\SetDef{x\mapsto a + bx}{a,b\in\R}$, ce qui permet une interprétati
 Premièrement, $\Phi^*$ ne prend pas des valeurs en un espace de dimension finie. Deuxièmement, on ne connaît pas $\Phi^*(u_0)(t)$ pour un temps $t\in I$. On est obligé de calculer une approximation par une méthode numérique. Et on peut utiliser un réseaux de neuronnes, qui devient alors une méthode numérique. Il y a différentes technique qui rentre dans cette catégorie
 \begin{itemize}
 %
-\item \textbf{Méthodes de Galerkine} (Séries de Fourier, FEM, ondelettes, méthodes spectrales) où l'on construit des fonctions de base appropriée pour le modèle en question. Ces méthodes dépendent de paramètre. Dans le cas des séries de Fourier il s'agit des indices que l'on utilise et dans le cas de la FEM, il s'agit par exemple du maillage. Depuis longtemps il existe des algorithmes qui cherche à optimiser ces paramètre (méthodes adaptatives) en fonction de la 'solution' $\Phi^*(u_0)$. Il s'agit de l'approximation non-linéaire. 
+\item \textbf{Méthodes de Galerkine} (Séries de Fourier, FEM, ondelettes, méthodes spectrales) où l'on construit des fonctions de base appropriée pour le modèle en question. Ces méthodes dépendent de paramètres. Dans le cas des séries de Fourier il s'agit des indices que l'on utilise et dans le cas de la FEM, il s'agit par exemple du maillage. Depuis longtemps il existe des algorithmes qui cherche à optimiser ces paramètres (méthodes adaptatives) en fonction de la 'solution' $\Phi^*(u_0)$. Il s'agit de l'approximation non-linéaire. 
 
 Une caractéristique des méthode de Galerkine est que les coefficients sont obtenus par la résolution d'un système d'équations nonlinéaires.
-Dans les réseaux de neuronne, même si la machine est vectoriel, on minimise une fonction perte.  
+Dans les réseaux de neuronnes, même si la machine est vectorielle, on minimise une fonction perte.  
 %
 \item \textbf{Méthode de réduction de modèle}, POD où on essaie d'extraire l'information essentielle pour construire une base adaptée. Ces méthodes sont souvent combinées avec une méthode de Galerkine.
 \end{itemize}
 %
-\item \textbf{Mélange de régression et simplification}. Si nous avons un modèle $\Phi^*$ et des observations (données), on peut facilement combiner les deux si le problème d'apprentissage est une minimisation : il suffit de rajouter une mesure des écarts entre modèle et observations à la fonction à minimiser (la perte). Cela est souvent utilisé comme argument en faveur des réseauw de neuronnes. 
-Toutefois, minimiser la somme de deux fonctions $f$ et $g$ dépend d'une pondération que l'on donne et peut être très différent des autres problèmes qui se posent naturellement
+\item \textbf{Mélange de régression et simplification}. Si nous avons un modèle $\Phi^*$ et des observations (données), on peut facilement combiner les deux si le problème d'apprentissage est une minimisation : il suffit de rajouter une mesure des écarts entre modèle et observations à la fonction à minimiser (la perte). Cela est souvent utilisé comme argument en faveur des réseaux de neuronnes. 
+Toutefois, minimiser la somme de deux fonctions $f$ et $g$ dépend d'une pondération que l'on choisit a priori et le résultat peut être très différent des résultats des autres problèmes qui se posent naturellement
 \begin{align*}
 \left\{
 \begin{aligned}
@@ -296,7 +298,7 @@ Le problème d'apprentissage est alors la minimisation de $\widehat{L}:\R^{\npar
 %
 %--------------------------------------
 \begin{remark}\label{remark:}
-On peut avoir une régularisation $\widehat{L}(w) = \widetilde{L}(w,\mathcal D) + \frac{\alpha}{2}\norm{w-w_0}^2$ avec $w_0$ des valeurs données de paramètre du modèle, ou, encore plus complexe, des contraintes sur les paramètres du modèle.
+On peut avoir une régularisation $\widehat{L}(w) = \widetilde{L}(w,\mathcal D) + \frac{\alpha}{2}\norm{w-w_0}^2$ avec $w_0$ des valeurs données des paramètres du modèle, ou, encore plus complexe, des contraintes sur les paramètres du modèle.
 \end{remark}
 %--------------------------------------
 %
@@ -322,7 +324,7 @@ Par les théorèmes du calcul différentiel nous avons.
 %
 %--------------------------------------
 \begin{theorem}\label{theorem:}
-Si $L$ et $\Phi$ sont de continûment différentiables, alors   $\widetilde{L}\in C^1(\R^{\nparammodel})$, le gradient de $\widetilde{L}$ s'écrit
+Si $L$ et $\Phi$ sont continûment différentiables, alors   $\widetilde{L}\in C^1(\R^{\nparammodel})$, le gradient de $\widetilde{L}$ s'écrit
 %
 \begin{equation}\label{equation:}
 \nabla  \widetilde{L}(w) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} \transpose{\Phi'_w(x_i,w)}\nabla_z L(\Phi(x_i,w),y_i)
@@ -336,7 +338,7 @@ Si $L$ et $\Phi$ sont de continûment différentiables, alors   $\widetilde{L}\i
 \subsection{Classification binaire}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
-On utilise souvent 'binary cross entropy' (si la dernière couche finit avec une sigmoïde)
+On utilise souvent la 'binary cross entropy' (si la dernière couche finit avec une sigmoïde)
 %
 \begin{equation}\label{equation:}
 y_i \in \Set{-1,+1},\quad l(x) := -\frac{1}{\ndata}\sum_{i=1}^{\ndata} y_i\log(z_i)+(1-y_i)\log(1-z_i);\quad z_i = \Phi(x_i,w)
@@ -347,12 +349,13 @@ y_i \in \Set{-1,+1},\quad l(x) := -\frac{1}{\ndata}\sum_{i=1}^{\ndata} y_i\log(z
 \subsection{Classification}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
-Avec $n_C$ classes, $y_{ij}\ge0 $, $\sum_{j=1}^{n_C}y_{ij}=1$ pour tout $i$.
+Avec $n_C$ classes, $y_{ij}\ge0 $, $\sum_{j=1}^{n_C}y_{ij}=1$ pour tout $i$. 
 %
 \begin{equation}\label{equation:}
-y_i \in \llbracket 1,\cdots, n_c\rrbracket \quad l(x) := -\frac{1}{\ndata}\sum_{i=1}^{\ndata}\sum_{j=1}^{n_C} y_{ij}\log(z_{ij});\quad z_{ij} = \Phi(x_i,w)
+y_i \in \llbracket 1,\cdots, n_c\rrbracket \quad l(x) := -\frac{1}{\ndata}\sum_{i=1}^{\ndata}\sum_{j=1}^{n_C} y_{ij}\log(z_{ij});\quad z_{ij} = \Phi(x_i,w).
 \end{equation}
 %
+On interprète les $z_{ij}$ comme la probabilité que 
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Moindre carré}\label{subsec:}
@@ -368,7 +371,7 @@ l(x)= \frac12\sum_{i=1}^m \abs{y_i-\Phi(x_i,w)}^2.
 \subsection{Remarques}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
-Il y a une certaine ambiguïté dans nos définition de couches et de fonction de perte : on peut intégrer les dernières couches dans la fonction de parte.
+Il y a une certaine ambiguïté dans nos définition de couches et de fonction de perte : on peut toujours intégrer les dernières couches dans la fonction de parte.
 %
 %
 %--------------------------------------
@@ -419,11 +422,6 @@ Un problème d'apprentissage de machine 'machine learning' consiste en trois ing
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Différentation automatique}\label{subsec:}
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%
-%
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Machine vectoriel}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
 %
@@ -480,7 +478,7 @@ u_N(t) = \sum_{j=0}^N c_j \phi_j(t),\quad \sum_{j=0}^N c_j \phi_j(0) = u_0,\quad
 %
 %--------------------------------------
 \begin{example}\label{example:}
-Pour $X_N = B^1(I)$, l'espace des spline quadratique de classe $C^1$ sur le \textbf{même} maillage $(t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson.
+Pour $X_N = B^1(I)$, l'espace des spline quadratique de classe $C^1$ sur le \textbf{même} maillage $(t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson. Plus généralement, les méthodes de collocation font partie des méthode de Runge-Kutta implicites.
 \end{example}
 %--------------------------------------
 %
@@ -507,9 +505,27 @@ le conditionnement du problème.
 %--------------------------------------
 %
 %
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{EDO avec paramètres}\label{subsec:}
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%==========================================
+\section{Réseaux pour les EDO}\label{sec:}
+%==========================================
+%
+\begin{enumerate}
+\item Pour l'exemple de l'EDO d'ordre deux scalaire
+\begin{enumerate}
+\item Que se passe-t-il si l'on a plus de fonctions de base que de points de collocations ?
+\item Étudier la convergence et l'erreur en fonction du nombre de point de collocation (et du nombre de fonctions de base).
+\item Changer les conditions de limites : on remplace $u(T)=0$ par $u'(0)=\alpha$.
+\item Que se passe-t-il si l'on varie le nombre de couches ?
+\item Que se passe-t-il si l'on change la fonction d'activation ?
+\item Que se passe-t-il si l'on change la perte : par exemple pondération différente, $l_1$ ?
+\item Essayer d'implémenter les conditions de bord comme contraintes.
+\item Plotter les fonctions de base
+\end{enumerate}
+\end{enumerate}
+%
+%==========================================
+\section{EDO avec paramètres}\label{sec:}
+%==========================================
 %
 Dans la pratique, les modèles mathématiques contiennent des paramètres (physique ou non). Soit $n_p\in\N$ et $p=(p_0,p_1)\in \R^{n_p}$ et
 %
@@ -556,15 +572,6 @@ u:= S(p), \quad \delta u := S'(p)(\delta p)\\
 \right.
 \end{equation}
 %
-%
-%==========================================
-\section{Réseaux pour les EDO}\label{sec:}
-%==========================================
-%
-%
-%==========================================
-\section{Calcul de dérivées}\label{sec:}
-%==========================================
 %
 %
 
