@@ -6,6 +6,7 @@
 \usepackage{graphicx}
 \usepackage{cancel}
 \usepackage{stmaryrd}
+\usepackage{hyperref}
 %---------------------------------------------------------
 \newcommand{\nparammodel}{n_W}
 \newcommand{\ndata}{n_D}
@@ -452,19 +453,33 @@ On rappelle le théorème de Cauchy-Lipschitz. S'il existe $r>0$ et $L>0$ tel qu
 \norm{f(u)-f(v)}\le L\norm{u-v}\quad \forall u,v\in U\cap B_r(u_0),
 \end{equation}
 %
-alors il existe $T>0$ une solution unique de \eqref{equation:EDO} sur $[0,T]$. $f\in C^1(U,\R^n)$ est suffisant pour \eqref{equation:CondLip}.
+alors il existe $T>0$ et une solution unique de \eqref{equation:EDO} sur $[0,T]$. $f\in C^1(U,\R^n)$ est suffisant pour \eqref{equation:CondLip}.
+%
+%
+%--------------------------------------
+\begin{remark}\label{remark:}
+\begin{enumerate}
+\item Il existe un temps maximal $T\in\R\cup\Set{+\infty}$ d'existence de solution. Si $T<+\infty$, nous avons $\lim\limits_{t\nearrow T}\abs{u(t)}=+\infty$.
+\item L'équation non-autonome
+\begin{align*}
+\frac{du}{dt} = f(t,u)
+\end{align*}
+ s'écrite comme \eqref{equation:EDO} avec $\widetilde{u} = (u, v)$, $\widetilde{f}(\widetilde{u}) = (f(v,u),1)$ et $\widetilde{u_0}=(u_0,0)$, la variable $v$ est le temps.
+\end{enumerate}
+\end{remark}
+%--------------------------------------
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Méthode de collocation}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
-Une méthode de collocation sur un intervalle $I=[0;T]$ consiste à choisir un espace $X_n\subset C^1(I,\R^n)$ de dimension $N+1$ et des points (maillage)
+Une méthode de collocation sur un intervalle $I=[0;T]$ consiste à choisir un espace $X_N\subset C^1(I,\R^n)$ de dimension $N+1$ et des points (maillage)
 %
 \begin{equation}\label{equation:Mesh}
-0 = t_0 < t_1 < \cdots < t_N = T
+0 = t_0 < t_1 < \cdots < t_N = T.
 \end{equation}
 %
-et imposer les équations à une fonction $u_N\in X_N$
+On impose les équations à une fonction $u_N\in X_N$
 %
 \begin{equation}\label{equation:Collocation}
 u_N(0) = u_0,\quad \frac{du_N}{dt}(t_i) = f(u_N(t_i))\quad 1\le i\le N.
