@@ -470,24 +470,28 @@ alors il existe $T>0$ et une solution unique de \eqref{equation:EDO} sur $[0,T]$
 %--------------------------------------
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Méthode de collocation}\label{subsec:}
+\subsection{Méthode de collocation et méthode de Galerkin}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
+%------------------------------------
+\subsubsection{Méthode de collocation}
+%------------------------------------
+
 Une méthode de collocation sur un intervalle $I=[0;T]$ consiste à choisir un espace $X_N\subset C^1(I,\R^n)$ de dimension $N+1$ et des points (maillage)
 %
 \begin{equation}\label{equation:Mesh}
-0 = t_0 < t_1 < \cdots < t_N = T.
+\tau = \left( 0 = t_0 < t_1 < \cdots < t_N = T\right).
 \end{equation}
 %
 On impose les équations à une fonction $u_N\in X_N$
 %
 \begin{equation}\label{equation:Collocation}
-u_N(0) = u_0,\quad \frac{du_N}{dt}(t_i) = f(u_N(t_i))\quad 1\le i\le N.
+u(0) = u_0,\quad \frac{du}{dt}(t_i) = f(u(t_i))\quad 1\le i\le N.
 \end{equation}
 %
 Soit $(\phi_j)_{0\le j\le N}$ une base de $X_N$. \eqref{equation:Collocation} est alors converti en un système algébrique pour les coefficient $c\in\R^{N+1}$
 \begin{align*}
-u_N(t) = \sum_{j=0}^N c_j \phi_j(t),\quad \sum_{j=0}^N c_j \phi_j(0) = u_0,\quad \sum_{j=0}^N c_j\frac{d\phi_j}{dt}(t_i) = f(\sum_{j=0}^N c_j \phi_j(t)).
+u(t) = \sum_{j=0}^N c_j \phi_j(t),\quad \sum_{j=0}^N c_j \phi_j(0) = u_0,\quad \sum_{j=0}^N c_j\frac{d\phi_j}{dt}(t_i) = f(\sum_{j=0}^N c_j \phi_j(t)).
 \end{align*}
 %
 %
@@ -496,6 +500,17 @@ u_N(t) = \sum_{j=0}^N c_j \phi_j(t),\quad \sum_{j=0}^N c_j \phi_j(0) = u_0,\quad
 Pour $X_N = B^1(I)$, l'espace des spline quadratique de classe $C^1$ sur le \textbf{même} maillage $(t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson. Plus généralement, les méthodes de collocation font partie des méthode de Runge-Kutta implicites.
 \end{example}
 %--------------------------------------
+%
+%
+%------------------------------------
+\subsubsection{Méthode de Galerkin}
+%------------------------------------
+%
+Une méthode de Galerkin consiste à choisir deux espaces $X_N$ et $Y_N$ associé à $\tau$ et l'approximation est définie par
+%
+\begin{equation}\label{equation:}
+u\in u_0+X_N :\;\int_0^T \frac{du}{dt} v =  \int_0^T f(u) v\quad \forall v\in Y_n.
+\end{equation}
 %
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

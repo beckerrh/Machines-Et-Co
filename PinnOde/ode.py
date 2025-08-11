@@ -14,20 +14,25 @@ class MachineMlp(nnx.Module):
         in_dim = 1
         self.layers = []
         for i, out_dim in enumerate(layers):
-            layer = nnx.Linear(in_dim, out_dim, rngs=nnx.Rngs(keys[i]))
+            if in_dim != out_dim:
+                layer = nnx.Linear(in_dim, out_dim, rngs=nnx.Rngs(keys[i]))
+            else:
+                # layer = nnx.Linear(in_dim, out_dim, rngs=nnx.Rngs(keys[i]))
+                # layer = outils.TriangularDense(in_dim, rngs=nnx.Rngs(keys[i]))
+                layer = outils.BandedDense(in_dim, 3, rngs=nnx.Rngs(keys[i]))
             self.layers.append(layer)
             in_dim = out_dim
     def __call__(self, t):
         # t shape: scalar or (batch,)
         x = jnp.atleast_1d(t).reshape(-1, 1)  # shape (batch, 1)
         for layer in self.layers[:-1]:
-            x = jnp.tanh(layer(x))
+            x = x + jnp.tanh(layer(x))
         last_layer = self.layers[-1]
         return last_layer(x)
 
     def regularization(self, t_colloc):
         M = self(t_colloc)  # shape (nbases, N)
-        e = jnp.sum(M, axis=0) - 1
+        e = jnp.sum(M, axis=1) - 1
         return jnp.mean(e ** 2)
 
 #==================================================================
@@ -65,7 +70,7 @@ def train_all(machine, model, t_colloc, lr=0.01, n_epochs=1000):
         model_temp = nnx.merge(graphdef_model, params_model, batch_stats_model)
         res_dom = model_temp.residual_edo(machine_tmp, t_colloc)
         res_bdry = model_temp.residual_bdry(machine_tmp, t_colloc)
-        return jnp.mean(res_dom**2) + jnp.mean(res_bdry**2)
+        return jnp.mean(res_dom**2) + jnp.mean(res_bdry**2) + 0.1*machine_tmp.regularization(t_colloc)
 
     @jax.jit
     def train_step(params, opt_state):
