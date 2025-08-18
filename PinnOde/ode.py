@@ -17,10 +17,11 @@ class MachineMlp(nnx.Module):
             if in_dim != out_dim:
                 layer = nnx.Linear(in_dim, out_dim, rngs=nnx.Rngs(keys[i]))
             else:
-                # layer = nnx.Linear(in_dim, out_dim, rngs=nnx.Rngs(keys[i]))
+                layer = nnx.Linear(in_dim, out_dim, rngs=nnx.Rngs(keys[i]))
                 # layer = outils.TriangularDense(in_dim, rngs=nnx.Rngs(keys[i]))
-                layer = outils.BandedDense(in_dim, 3, rngs=nnx.Rngs(keys[i]))
+                # layer = outils.BandedDense(in_dim, 3, rngs=nnx.Rngs(keys[i]))
             self.layers.append(layer)
+            # self.layers.append(nnx.Dropout(out_dim, out_dim, rngs=nnx.Rngs(keys[i])))
             in_dim = out_dim
     def __call__(self, t):
         # t shape: scalar or (batch,)
@@ -97,7 +98,8 @@ if __name__ == '__main__':
     # app, layers, n_colloc = ode_examples.Exponential(), [3,3], 6
     # app, layers, n_colloc = ode_examples.Exponential(), [11,11], 12
     # app, layers, n_colloc = ode_examples.Exponential(), [23,23], 24
-    app, layers, n_colloc = ode_examples.Pendulum(t_end=4), [24,24], 25
+    # app, layers, n_colloc = ode_examples.Pendulum(t_end=4), [24,24], 25
+    app, layers, n_colloc = ode_examples.Pendulum(t_end=3, is_linear=False), [24,24], 25
     # machine = Machine(layers)
     key = jax.random.PRNGKey(42)
     machine = MachineMlp(layers, key)

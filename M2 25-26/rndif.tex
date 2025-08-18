@@ -496,6 +496,18 @@ u(t) = \sum_{j=0}^N c_j \phi_j(t),\quad \sum_{j=0}^N c_j \phi_j(0) = u_0,\quad \
 %
 %
 %--------------------------------------
+\begin{remark}\label{remark:}
+Pour une équation linéaire $f(u)=A u + b$ on obtient un système linéaire à résoudre
+%
+\begin{equation}\label{equation:}
+K c = \gamma,\quad K_{ij} = \frac{d\phi_j}{dt}(t_i) - A\phi_j(t_i),\quad \gamma_i = b 
+\end{equation}
+%
+\end{remark}
+%--------------------------------------
+%
+%
+%--------------------------------------
 \begin{example}\label{example:}
 Pour $X_N = B^1(I)$, l'espace des spline quadratique de classe $C^1$ sur le \textbf{même} maillage $(t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson. Plus généralement, les méthodes de collocation font partie des méthode de Runge-Kutta implicites.
 \end{example}
@@ -517,11 +529,11 @@ u\in u_0+X_N :\;\int_0^T \frac{du}{dt} v =  \int_0^T f(u) v\quad \forall v\in Y_
 \subsection{Fonction loss}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
-Une première idée est d'utiliser un espace $\tilde X=X_{\Phi}$ généré par une machine vectorielles $\Phi$ est d'utiliser la fonction perte
+Une première idée  (PINN) est d'utiliser un espace $\tilde X=X_{\Phi}$ généré par une machine vectorielles $\Phi$ est d'utiliser la fonction perte
 \begin{align*}
 \frac12\norm{\tilde u(0)-u_0}^2 + \sum_{i=0}^N \frac12\norm{\frac{d\tilde u}{dt}(t_i) - f(\tilde u(t_i)}^2
 \end{align*}
-Il est alors facile de rajouter un term avec des données (PINN) $\mathcal D=(\tilde t_k, \tilde w_k)$ (mesures expermientales)
+Il est alors facile de rajouter un term avec des données $\mathcal D=(\tilde t_k, \tilde w_k)$ (mesures expermientales)
 \begin{align*}
 l_{\rm PINN}(\tilde u) = \frac12\norm{\tilde u(0)-u_0}^2 + \sum_{i=0}^N \frac12\norm{\frac{d\tilde u}{dt}(t_i) - f(\tilde u(t_i)}^2 + \sum_{k=1}^d \frac12\norm{\tilde u(\tilde t_k) - \tilde w_k}^2
 \end{align*}
