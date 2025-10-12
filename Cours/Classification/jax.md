@@ -114,7 +114,7 @@ plot_vector_field(df_dp, xrange=[-2,4], yrange=[-2,4], title="df_dp", color='yel
     
 
 
-Voici un perceptron
+Voici un perceptron (à la main)
 
 
 ```python
