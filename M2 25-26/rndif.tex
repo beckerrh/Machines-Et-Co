@@ -1,7 +1,8 @@
 %----------------------------------------
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper, french]{article}
 %----------------------------------------
 %
+\usepackage[french]{babel}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{cancel}
@@ -99,14 +100,14 @@ Soit $m,n,\nparammodel\in\N$. Une \textbf{machine} est une application
 \begin{align*}
 \Phi:\R^n\times \R^{\nparammodel}\to \R^m,\qquad (x,\tilde w)\to y = \Phi(x,\tilde w).
 \end{align*}
-\textbf{L'apprentissage} consiste à fixer $w=w_*$ de sorte que l'application $x\mapsto \Phi(x,w_*)$ permet de représenter des données ou un modèle physique.
+\textbf{L'apprentissage} consiste à déterminer $\tilde w=w_*$ de sorte que l'application $x\mapsto \Phi(x,w_*)$ permet de représenter des données ou un modèle physique.
 
 On appelle $\Phi$ une \textbf{machine vectoriel}, si
 \begin{align*}
 \Phi(x,\tilde w) = \sum_{i=1}^N c_i \phi_i(x,w).
 \end{align*}
 Dans ce cas nous avons $\tilde w = (c,w)$ et $X_{\Phi}:=\im\Phi =\vect{\phi_i(x,w)}{1\le i\le N}$.
-Les fonction $\phi_i^{w} : x\mapsto \phi_i(x,w)$ peuvent former une base ou non. On les appelle souvent 'features' en anglais, ou un "dictionnaire de fonctions de base". 
+Les fonction $\phi_i^{w} : x\mapsto \phi_i(x,w)$ peuvent former une base ou non. On les appelle souvent 'features' en anglais. 
 Nous avons alors une application ('feature map')
 %
 \begin{equation}\label{equation:}
@@ -128,8 +129,8 @@ I_n f(t) = \sum_{i=0}^N c_i \phi_i(t),\quad \phi_i(t)=\prod_{j=1\atop j\ne i}^{N
 \end{align*}
 Ici, nous avons "$w=\emptyset$".
 \item Même chose, mais avec les points d'interpolation variables, donc "$w=(t_i)$".
-\item Espace $P^1([0;1])$. Similaire au deux précédents.
-\item Espace des séries de Fourier tronquées. Similaire aux précédents.
+\item Espace $P^1([0;1])$. Similaire au deux précédents. On a une base locale, c'est à dire le support de chaque $\phi_i$ est autour de $t_i$.
+\item Espace des séries de Fourier tronquées. Similaire aux précédents. Bases globales, le support de chaque $\phi_i$ est tout le domaine.
 \end{itemize}
 \end{example}
 %--------------------------------------
@@ -171,7 +172,6 @@ Un \textbf{réseau multi-couches (MLP, 'multi-layer-perceptron')} est la composi
 W_i\in \R^{n_i\times n_{i-1}},\quad b_i\in \R^{n_i},\quad n_0=n,\quad n_L = m.
 \end{align*}
 %
-Nous appelons plus généralement \textbf{machine} 
 \end{definition}
 %--------------------------------------
 %
@@ -204,6 +204,7 @@ C'est le gradient de  ${\rm logsumexp}_{\beta}: \R^n\to\R,\quad x\mapsto \beta\l
 \item 'SVM' exemple d'un problème d'optimisation, aussi 'implicit'.
 \end{itemize}
 %
+Ainsi, un \og réseau de neurones\fg
 %==========================================
 \section{Pourquoi construire des machines ?}\label{sec:}
 %==========================================
@@ -252,7 +253,7 @@ Dans les réseaux de neuronnes, même si la machine est vectorielle, on minimise
 \item \textbf{Méthode de réduction de modèle}, POD où on essaie d'extraire l'information essentielle pour construire une base adaptée. Ces méthodes sont souvent combinées avec une méthode de Galerkine.
 \end{itemize}
 %
-\item \textbf{Mélange de régression et simplification}. Si nous avons un modèle $\Phi^*$ et des observations (données), on peut facilement combiner les deux si le problème d'apprentissage est une minimisation : il suffit de rajouter une mesure des écarts entre modèle et observations à la fonction à minimiser (la perte). Cela est souvent utilisé comme argument en faveur des réseaux de neuronnes. 
+\item \textbf{Mélange de régression et de réduction de modèle}. Si nous avons un modèle $\Phi^*$ et des observations (données), on peut facilement combiner les deux si le problème d'apprentissage est une minimisation : il suffit de rajouter une mesure des écarts entre modèle et observations à la fonction à minimiser (la perte). Cela est souvent utilisé comme argument en faveur des réseaux de neuronnes. 
 Toutefois, minimiser la somme de deux fonctions $f$ et $g$ dépend d'une pondération que l'on choisit a priori et le résultat peut être très différent des résultats des autres problèmes qui se posent naturellement
 \begin{align*}
 \left\{
