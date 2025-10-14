@@ -155,13 +155,15 @@ def total_loss(params, X, Y):
     loss_vec = jax.vmap(lambda x, y: loss_fn(params, x, y))
     return jnp.mean(loss_vec(X, Y))
 
-# Une itération méthode du gradient
+# Une itération de la méthode du gradient
 @jax.jit
 def update(params, X, Y, lr=0.01):
     grads = jax.grad(total_loss)(params, X, Y)
+    # jax.grad(fun, argnums=0,...)
+    # par défaut grad calcule le grad par rapport au premier argument
     return [(w - lr * dw) for w, dw in zip(params, grads)]
 
-# Creation des données
+# Création des données
 key, X, Y, X_pos, X_neg = create_data()
 
 # Initialisation
@@ -227,18 +229,18 @@ def hinge_loss(params, x, y):
 
 # La version vectorisée et accelérée
 @jax.jit
-def total_loss(params, X, Y, C=1.0):
+def total_loss(params, X, Y, C=0.01):
     hinge_losses = jax.vmap(hinge_loss, in_axes=(None, 0, 0))(params, X, Y)
     w = params[0]
     return 0.05 * jnp.dot(w, w) + C * jnp.mean(hinge_losses)
 
-# Une itération méthode du gradient
+# Une itération de la méthode du gradient
 @jax.jit
 def update(params, X, Y, lr=0.1, C=1.0):
     grads = jax.grad(total_loss)(params, X, Y, C)
     return [(w - lr * dw) for w, dw in zip(params, grads)]
 
-# Creation des données
+# Création des données
 key, X, Y, X_pos, X_neg = create_data(svm=True)
 
 # Initialisation
@@ -269,16 +271,16 @@ plt.axis("equal")
 plt.show()
 ```
 
-    Epoch 0, Loss: 0.3934
-    Epoch 10, Loss: 0.3261
-    Epoch 20, Loss: 0.2708
-    Epoch 30, Loss: 0.2274
-    Epoch 40, Loss: 0.1920
-    Epoch 50, Loss: 0.1643
-    Epoch 60, Loss: 0.1415
-    Epoch 70, Loss: 0.1228
-    Epoch 80, Loss: 0.1088
-    Epoch 90, Loss: 0.0988
+    Epoch 0, Loss: 0.3303
+    Epoch 10, Loss: 0.2673
+    Epoch 20, Loss: 0.2161
+    Epoch 30, Loss: 0.1754
+    Epoch 40, Loss: 0.1423
+    Epoch 50, Loss: 0.1161
+    Epoch 60, Loss: 0.0948
+    Epoch 70, Loss: 0.0775
+    Epoch 80, Loss: 0.0643
+    Epoch 90, Loss: 0.0547
 
 
 

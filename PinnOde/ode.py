@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # app, layers, n_colloc = ode_examples.Exponential(), [11,11], 12
     # app, layers, n_colloc = ode_examples.Exponential(), [23,23], 24
     # app, layers, n_colloc = ode_examples.Pendulum(t_end=4), [24,24], 25
-    app, layers, n_colloc = ode_examples.Pendulum(t_end=3, is_linear=False), [24,24], 25
+    app, layers, n_colloc = ode_examples.Pendulum(t_end=5, is_linear=False), [24,24], 25
     # machine = Machine(layers)
     key = jax.random.PRNGKey(42)
     machine = MachineMlp(layers, key)

@@ -12,9 +12,9 @@ import numpy as np
 class MLP(nnx.Module):
     def __init__(self, key, in_dim=1, hidden=128, out_dim=3):
         k1, k2, k3, k4 = jax.random.split(key, 4)
-        self.l1 = nnx.Dense(in_dim, hidden, key=k1)
-        self.l2 = nnx.Dense(hidden, hidden, key=k2)
-        self.l3 = nnx.Dense(hidden, out_dim, key=k3)
+        self.l1 = nnx.Linear(in_dim, hidden, key=k1)
+        self.l2 = nnx.Linear(hidden, hidden, key=k2)
+        self.l3 = nnx.Linear(hidden, out_dim, key=k3)
 
     def __call__(self, t):
         # t expected shape (batch, 1)
