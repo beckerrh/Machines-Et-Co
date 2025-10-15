@@ -37,9 +37,9 @@ class MLP(nnx.Module):
         return last_layer(t)[0]
 # Calcul de u''(x) par JAX autodiff
     def dudt(self, t):
-        return jax.grad(lambda x: self.forward(x))(t)
+        return jax.grad(self.forward)(t)
     def d2udt2(self, t):
-        return jax.grad(lambda x: self.dudt(x))(t)
+        return jax.grad(self.dudt)(t)
     def residual_ode(self, t):
         return self.d2udt2(t) + (jnp.pi ** 2) * jnp.sin(jnp.pi * t)
     def residual_bc(self, t0, t1):
