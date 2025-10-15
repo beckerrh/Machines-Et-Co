@@ -48,7 +48,7 @@ def residual(params, t):
     return d2udt2(params, t) + (jnp.pi ** 2) * jnp.sin(jnp.pi * t)
 # Total loss = physics + boundary conditions
 def loss(params):
-    # Physics loss
+    # Ode loss
     res = jax.vmap(lambda t: residual(params, t))(t_colloc)
     physics_loss = jnp.mean(res ** 2)
     # Boundary conditions
