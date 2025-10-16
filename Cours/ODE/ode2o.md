@@ -170,6 +170,7 @@ D'abord, on reprend le même exemple avec OPTAX
 
 
 Finalement, on utilise aussi FLAX, ou plutôt sa partie nnx.
+Cela ressemble à pytorch dans l'idée, mais le traîtement de paramètres est différent.
 
 
 ```python
@@ -193,18 +194,19 @@ class MLP(nnx.Module):
         return last_layer(t)[0]
 # Calcul de u''(x) par JAX autodiff
     def dudt(self, t):
-        return jax.grad(lambda x: self.forward(x))(t)
+        return jax.grad(self.forward)(t)
     def d2udt2(self, t):
-        return jax.grad(lambda x: self.dudt(x))(t)
+        return jax.grad(self.dudt)(t)
     def residual_ode(self, t):
         return self.d2udt2(t) + (jnp.pi ** 2) * jnp.sin(jnp.pi * t)
     def residual_bc(self, t0, t1):
         return self.forward(t0) **2 + self.forward(t1)**2
 
 machine = MLP(layers)
+# on récupère tous les ingrédients du 'module'
 graphdef, params, batch_stats = nnx.split(machine, nnx.Param, nnx.BatchStat)
 def loss(params):
-    # ode loss
+    # on reconstruit une machine avec les paramètres actuels
     machine_tmp = nnx.merge(graphdef, params, batch_stats)
     res = jax.vmap(machine_tmp.residual_ode)(t_colloc)
     ode_loss = jnp.mean(res ** 2)
@@ -228,6 +230,7 @@ for epoch in range(n_epochs):
     if epoch % 100== 0:
         print(f"Epoch {epoch:7d}, Loss: {loss_value:.3e}")
 
+# on reconstruit une machine avec les paramètres trouvés
 trained_machine = nnx.merge(graphdef, params, batch_stats)
 # Visu
 t_plot = jnp.linspace(t0, t1, 200)

@@ -8,6 +8,38 @@
 \usepackage{cancel}
 \usepackage{stmaryrd}
 \usepackage{hyperref}
+\usepackage{xcolor}
+\definecolor{blueuppa}{HTML}{67B0E2}
+\definecolor{violetuppa}{HTML}{995CA2}
+\definecolor{jauneuppa}{HTML}{B3BE11}
+\definecolor{vertuppa}{HTML}{5A950E}%8E950E
+\hypersetup{
+    colorlinks,
+    linkcolor={blueuppa!60!black},
+    citecolor={blueuppa!30!black},
+    urlcolor={blue!80!black}
+}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\slshape\nouppercase{\leftmark}}
+\fancyhead[R]{\hyperlink{toc}{\thepage}}
+%---------------------------------------------------------
+\usepackage{tikz-cd}
+\newcommand{\cdtriangle}[6]{
+\begin{tikzcd}[ampersand replacement=\&] {#1}  \arrow[swap]{rd}{{#4}} \arrow{r}{{#5}}  \& {#2} \arrow{d}{{#6}}\\ \& {#3}  \end{tikzcd}
+}
+\newcommand{\cdtriangleleft}[6]{
+\begin{tikzcd}[ampersand replacement=\&]  {#1} \arrow[swap]{dd}{{#4}} \arrow{dr}{{#5}} \&  \\  \& {#3}\\ {#2} \arrow[swap]{ur}{{#6}} \& \\ \end{tikzcd}
+}
+\newcommand{\cdsquare}[8]{
+\begin{tikzcd}[ampersand replacement=\&] {#1} \arrow{r}{{#5}} \arrow[swap]{d}{{#6}}\& {#2} \arrow{d}{{#7}}\\ {#3} \arrow{r}{{#8}} \& {#4} \end{tikzcd}
+}
+%----------------------------------------
+\usepackage{enumitem}
+\setlist[itemize,1]{label=\textbullet}
+\setlist[itemize,2]{label=$\triangleright$}
+\setlist[itemize,3]{label=$\triangleleft$}
 %---------------------------------------------------------
 \newcommand{\nparammodel}{n_W}
 \newcommand{\ndata}{n_D}
@@ -42,6 +74,7 @@
 \newtheorem{remark}[theorem]{Remarque}
 \newtheorem{definition}[theorem]{Définition}
 \newtheorem{example}[theorem]{Exemple}
+\newtheorem{exercise}[theorem]{Exercice}
 
 %---------------------------------------------------------
 \title{M2 MMS : Réseaux de neurones pour la modélisation}
@@ -93,6 +126,10 @@ Prérequis
 \section{Machines et réseaux de neurones}\label{sec:}
 %==========================================
 %
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Machines et exemples classiques}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
@@ -135,6 +172,10 @@ Ici, nous avons "$w=\emptyset$".
 \end{example}
 %--------------------------------------
 %
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{MLP ('multilayer perceptron')}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
@@ -204,7 +245,25 @@ C'est le gradient de  ${\rm logsumexp}_{\beta}: \R^n\to\R,\quad x\mapsto \beta\l
 \item 'SVM' exemple d'un problème d'optimisation, aussi 'implicit'.
 \end{itemize}
 %
-Ainsi, un \og réseau de neurones\fg
+%
+%--------------------------------------
+\begin{exercise}\label{exercise:}
+\begin{enumerate}
+\item Écrire un MLP qui permet de construire l'espace $P^1(h)$ sur un maillage 1D $h=(t_0,\cdots, t_n)$.
+\raisebox{-15mm}{\includegraphics[keepaspectratio = true, width = 0.4\textwidth] {images/P1}}
+\item Se servir de la formule pour $k\ge 1$
+%
+\begin{equation}\label{equation:}
+\sum_{j=0}^k b_j t^j + \sum_{i=1}^n a_i (t-t_i)^k_+
+\end{equation}
+%
+pour construire un MLP pour les B-splines.
+%
+\item Comment construire un MLP pour le $P^1(h)$ sur un maillage en triangles ?
+\end{enumerate}
+\end{exercise}
+%--------------------------------------
+%
 %==========================================
 \section{Pourquoi construire des machines ?}\label{sec:}
 %==========================================
@@ -242,7 +301,7 @@ $\mathcal F=\SetDef{x\mapsto a + bx}{a,b\in\R}$, ce qui permet une interprétati
 \begin{align*}
 \Phi^* : U\subset\R^n \to C^1(I, \R^n),\quad \Phi^*(u_0) = \mbox{solution de \eqref{equation:EDO} sur l'intervalle $I$}
 \end{align*}
-Premièrement, $\Phi^*$ ne prend pas des valeurs en un espace de dimension finie. Deuxièmement, on ne connaît pas $\Phi^*(u_0)(t)$ pour un temps $t\in I$. On est obligé de calculer une approximation par une méthode numérique. Et on peut utiliser un réseaux de neuronnes, qui devient alors une méthode numérique. Il y a différentes technique qui rentre dans cette catégorie
+Premièrement, $\Phi^*$ ne prend pas des valeurs en un espace de dimension finie. Deuxièmement, on ne connaît pas $\Phi^*(u_0)(t)$ pour un temps $t\in I$. On est obligé de calculer une approximation par une méthode numérique. Et on peut utiliser un réseaux de neuronnes, qui devient alors une méthode numérique. Il y a différentes techniques qui rentre dans cette catégorie
 \begin{itemize}
 %
 \item \textbf{Méthodes de Galerkine} (Séries de Fourier, FEM, ondelettes, méthodes spectrales) où l'on construit des fonctions de base appropriée pour le modèle en question. Ces méthodes dépendent de paramètres. Dans le cas des séries de Fourier il s'agit des indices que l'on utilise et dans le cas de la FEM, il s'agit par exemple du maillage. Depuis longtemps il existe des algorithmes qui cherche à optimiser ces paramètres (méthodes adaptatives) en fonction de la 'solution' $\Phi^*(u_0)$. Il s'agit de l'approximation non-linéaire. 
@@ -281,16 +340,16 @@ Souvent, on partage les données en données d'apprentissage et données de test
 %
 %
 %--------------------------------------
-\begin{definition}\label{definition:}
+\begin{definition}\label{definition:Loss}
 On appelle \textbf{fonction de perte} (\textit{loss}) une fonction $\widetilde{L}:\R^{\nparammodel}\times\R^{\ndataall}\to \R$ dont la minimisation est l'\textbf{apprentissage} (\textit{learning}). On suppose avoir $L:\R^m\times \R^m\to \R$ telle que
 %
-\begin{equation}\label{equation:}
+\begin{equation}\label{equation:LossForData}
 \widetilde{L}(w,\mathcal D) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} L(\Phi(x_i,w),y_i).
 \end{equation}
 %
 Le problème d'apprentissage est alors la minimisation de $\widehat{L}:\R^{\nparammodel}\to\R$
 %
-\begin{equation}\label{equation:}
+\begin{equation}\label{equation:Loss}
 \min\SetDef{\widehat{L}(w)}{w\in \R^p},\quad \widehat{L}(w) = \widetilde{L}(w,\mathcal D).
 \end{equation}
 %
@@ -313,28 +372,6 @@ On peut avoir une régularisation $\widehat{L}(w) = \widetilde{L}(w,\mathcal D) 
 \end{itemize}
 \end{example}
 %--------------------------------------
-%
-On rappelle les notations du calcul différentiel. $F:\R^n\to\R^m$ est différentiable en $x$ s'il existe $A\in\R^{m\times n}$ tel que 
-\begin{align*}
-\lim_{h\to 0\atop h\ne0}\frac{\norm{R(x,h)}}{\norm{h}} = 0\quad \left(R(x,h) := F(x+h)-F(x) - Ah\right),\quad F'(x) := A.
-\end{align*}
-($F'(x)= Df(x)$ est plus simple à écrire).
-Dans le cas $m=1$ on écrit $\nabla f(x) := \transpose{f'(x)}$. Pour des fonctions de plusieurs variables, par exemple $F(x,z)$ on écrit 
-$F'_x(x,z)$ et $F'_z(x,z)$ pour les dérivées  "partielles".
-
-Par les théorèmes du calcul différentiel nous avons.
-%
-%--------------------------------------
-\begin{theorem}\label{theorem:}
-Si $L$ et $\Phi$ sont continûment différentiables, alors   $\widetilde{L}\in C^1(\R^{\nparammodel})$, le gradient de $\widetilde{L}$ s'écrit
-%
-\begin{equation}\label{equation:}
-\nabla  \widetilde{L}(w) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} \transpose{\Phi'_w(x_i,w)}\nabla_z L(\Phi(x_i,w),y_i)
-\end{equation}
-%
-\end{theorem}
-%--------------------------------------
-%
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Classification binaire}\label{subsec:}
@@ -416,14 +453,90 @@ Un problème d'apprentissage de machine 'machine learning' consiste en trois ing
 \end{definition}
 %--------------------------------------
 %
+Ces ingrédients étant fixés, l'apprentissage consiste alors à minimiser la fonction, voir \eqref{equation:LossForData} at \eqref{equation:Loss}
+%
+\begin{equation}\label{equation:Lossf}
+f: \R^{n_W}\to \R,\quad w\mapsto f(w) := \widehat{L}(w) \left( = \frac{1}{\ndata}\sum_{i=1}^{\ndata} L(\Phi(x_i,w),y_i) \right).
+\end{equation}
+%
+Cette fonction est différentiable dans beaucoup de cas (sauf ReLU), mais d'autres propriétés comme la convexité ne sont souvent pas présente.
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Méthode de gradient}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
+En général, les méthodes numériques utilisées dans l'apprentissage sont de variation de la méthode du gradient (ou de la descente).
+Partant d'un ensemble de paramètres $w_0\in \R^{n_W}$, on définit
+%
+\begin{equation}\label{equation:IterationGradient}
+w_{k+1} := w_k + t_k \nabla f(w_k),\quad \mbox{$t_k$ est le pas ou 'learning rate'}
+\end{equation}
+%
+Une itération est souvent appelé 'epoch'. L'ingrédient essentiel dans \eqref{equation:IterationGradient} et la gradient.
+%
+%--------------------------------------
+\begin{definition}\label{definition:grad}
+Soit $(X,\scp{\cdot}{\cdot})$ un espace de Hilbert et  $f\in C^1(X,\R)$. Alors
+%
+\begin{equation}\label{equation:}
+\scp{\nabla f(x)}{p} := \lim_{s\searrow0}\frac{f(x+sp)-f(x)}{s}.
+\end{equation}
+%
+On note que $\nabla f(x) = \transpose{Df(x)}$ (voir définition~\ref{definition:deriv}).
+\end{definition}
+%--------------------------------------
+%
+On voit qu'une difficulté majeure est le calcul de gradient.
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Différentation automatique}\label{subsec:}
+\subsection{Calcul différentiel}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+%
+On rappelle les notations du calcul différentiel. 
+%
+%--------------------------------------
+\begin{definition}\label{definition:deriv}
+$F:\R^n\to\R^m$ est différentiable en $x$ s'il existe $A\in\R^{m\times n}$ tel que 
+\begin{align*}
+\lim_{h\to 0\atop h\ne0}\frac{\norm{R(x,h)}}{\norm{h}} = 0\quad \left(R(x,h) := F(x+h)-F(x) - Ah\right),\quad DF(x) := A.
+\end{align*}
+Pour des fonctions de plusieurs variables, par exemple $F(x,z)$ on écrit 
+$DF_x(x,z)$ et $DF_z(x,z)$ pour les dérivées  "partielles".
+\end{definition}
+%--------------------------------------
+%
+On rappelle également
+%
+%--------------------------------------
+\begin{theorem}\label{theorem:}
+Soit $m,n,p\in\N$, $U\subset\R^n$, $V\subset \R^m$, $F\in C^1(U,\R^m)$, $G\in C^1(V,\R^p)$ et $F(U)\subset V$. Alors $h := g\circ f\in C^1(U,\R^p)$ et 
+pour $x\in U$ et $y:=f(x)\in V$
+%
+\begin{equation}\label{eq:calcdiff_deriveecompo}
+Dh(x) = Dg(y) Df(x),\quad\cdtriangle{U}{V}{\R^m}{h}{f}{g},\quad\cdtriangle{\R^n}{\R^n}{\R^m}{Dh(x)}{Df(x)}{Dg(y)}.
+\end{equation}
+%
+\end{theorem}
+%--------------------------------------
+%
+
+Par les théorèmes du calcul différentiel nous avons.
+%
+%--------------------------------------
+\begin{theorem}\label{theorem:}
+Si $L$ et $\Phi$ sont continûment différentiables, alors   $\widetilde{L}\in C^1(\R^{\nparammodel})$, le gradient de $\widetilde{L}$ s'écrit
+%
+\begin{equation}\label{equation:}
+\nabla  \widetilde{L}(w) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} \transpose{\Phi'_w(x_i,w)}\nabla_z L(\Phi(x_i,w),y_i)
+\end{equation}
+%
+\end{theorem}
+%--------------------------------------
+%
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Différentiation automatique}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
 %

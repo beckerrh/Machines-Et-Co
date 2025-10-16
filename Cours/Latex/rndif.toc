@@ -1,20 +1,23 @@
 \babel@toc {french}{}\relax 
 \contentsline {section}{\numberline {1}Machines et réseaux de neurones}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Machines et exemples classiques}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}MLP ('multilayer perceptron')}{3}{subsection.1.2}%
 \contentsline {section}{\numberline {2}Pourquoi construire des machines ?}{4}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Différentes classes de problèmes}{4}{subsection.2.1}%
-\contentsline {section}{\numberline {3}Fonction de perte}{5}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Classification binaire}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {2.1}Différentes classes de problèmes}{5}{subsection.2.1}%
+\contentsline {section}{\numberline {3}Fonction de perte}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Classification binaire}{7}{subsection.3.1}%
 \contentsline {subsection}{\numberline {3.2}Classification}{7}{subsection.3.2}%
 \contentsline {subsection}{\numberline {3.3}Moindre carré}{7}{subsection.3.3}%
 \contentsline {subsection}{\numberline {3.4}Remarques}{7}{subsection.3.4}%
-\contentsline {section}{\numberline {4}Apprentissage}{7}{section.4}%
+\contentsline {section}{\numberline {4}Apprentissage}{8}{section.4}%
 \contentsline {subsection}{\numberline {4.1}Méthode de gradient}{8}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Différentation automatique}{8}{subsection.4.2}%
-\contentsline {subsection}{\numberline {4.3}Apprentissage par étape}{8}{subsection.4.3}%
-\contentsline {section}{\numberline {5}EDO et méthode de collocation}{8}{section.5}%
-\contentsline {subsection}{\numberline {5.1}Méthode de collocation et méthode de Galerkin}{8}{subsection.5.1}%
-\contentsline {subsubsection}{\numberline {5.1.1}Méthode de collocation}{8}{subsubsection.5.1.1}%
-\contentsline {subsubsection}{\numberline {5.1.2}Méthode de Galerkin}{9}{subsubsection.5.1.2}%
-\contentsline {subsection}{\numberline {5.2}Fonction loss}{9}{subsection.5.2}%
-\contentsline {section}{\numberline {6}Réseaux pour les EDO}{9}{section.6}%
-\contentsline {section}{\numberline {7}EDO avec paramètres}{10}{section.7}%
+\contentsline {subsection}{\numberline {4.2}Calcul différentiel}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Différentiation automatique}{9}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Apprentissage par étape}{9}{subsection.4.4}%
+\contentsline {section}{\numberline {5}EDO et méthode de collocation}{9}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Méthode de collocation et méthode de Galerkin}{10}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}Méthode de collocation}{10}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}Méthode de Galerkin}{10}{subsubsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.2}Fonction loss}{10}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Réseaux pour les EDO}{11}{section.6}%
+\contentsline {section}{\numberline {7}EDO avec paramètres}{11}{section.7}%
