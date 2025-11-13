@@ -1,0 +1,50 @@
+\makeatletter \let \proof \axp@oldproof \let \endproof \endaxp@oldproof \let \claimproof \axp@oldclaimproof \let \endclaimproof \endaxp@oldclaimproof \let \section \axp@oldsection 
+\global \def \axp@protectref@ii {\ref {axp@sii}}
+\axp@section {\appendixsectionformat {\protect \axp@protectref@ii }{Machines et réseaux de neurones}}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{3}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@exerciserp} [\axp@refstar {axp@ri}]\axp@forward@target {axp@fw@ri}{}\axp@redefinelabels \rpleti \end {axp@exerciserp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+\begin{enumerate}
+\item Évidemment.
+\item Continuité aux $x_i$.
+\item Voir éléments finis.
+\item Voir éléments finis.
+\item C'est un changement de base $\Set{1, (x-x_k)_+}$ est une autre base Nous avons
+\begin{align*}
+1 = \sum_{k=0}^{n+1}\phi_k,\quad (x-x_k)_+ = \sum_{j=k+1}^n (x_j-x_k)\phi_j(x).
+\end{align*}
+\item Continuité uniforme.
+\end{enumerate}
+\makeatletter 
+\end {axp@oldproof}
+\global \def \axp@protectref@iv {\ref {axp@siv}}
+\axp@section {\appendixsectionformat {\protect \axp@protectref@iv }{Fonction de perte}}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{14}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@rii}]\axp@forward@target {axp@fw@rii}{}\axp@redefinelabels \rpletii \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter \begin {axp@oldproof}\makeatother 
+On écrite $x\mapsto\Phi(x,W,b) = \sigma(Wx+b)$ comme $\Phi_2 \circ \Phi_1$ avec $x\mapsto \Phi_1(x,W) = Wx$ et $y\mapsto\Phi_2(y,b) = \sigma(y+b)$. On a alors
+\begin{align*}
+L(\Phi(x,W,b), y) = L_2(\Phi_1(x,W),y),\quad L_2 (x,y) := L(\Phi_2(x),y).
+\end{align*}
+\makeatletter 
+\end {axp@oldproof}
+\global \def \axp@protectref@v {\ref {axp@sv}}
+\axp@section {\appendixsectionformat {\protect \axp@protectref@v }{Apprentissage}}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{17}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@riii}]\axp@forward@target {axp@fw@riii}{}\axp@redefinelabels \rpletiii \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{18}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@theoremrp} [\axp@refstar {axp@riv}]\axp@forward@target {axp@fw@riv}{}\axp@redefinelabels \rpletiv \end {axp@theoremrp} }
+\setcounter {equation}{\c@axp@equationx }
+\global \def \axp@protectref@vi {\ref {axp@svi}}
+\axp@section {\appendixsectionformat {\protect \axp@protectref@vi }{EDO}}
+\makeatletter 
+\setcounter {axp@equationx}{\c@equation }\setcounter {equation}{24}
+{\pretocmd {\@begintheorem }{\patchcmd {\thmhead }{\@acmplainnotefont }{}{}{}\patchcmd {\thmhead }{\the \thm@notefont }{}{}{}\patchcmd {\thmhead }{(}{}{}{}\patchcmd {\thmhead }{)}{}{}{}}{}{} \begin {axp@exerciserp} [\axp@refstar {axp@rv}]\axp@forward@target {axp@fw@rv}{}\axp@redefinelabels \rpletv \end {axp@exerciserp} }
+\setcounter {equation}{\c@axp@equationx }

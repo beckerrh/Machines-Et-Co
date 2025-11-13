@@ -2,11 +2,14 @@
 \documentclass[11pt,a4paper, french]{article}
 %----------------------------------------
 %
+\usepackage{xparse}
 \usepackage[french]{babel}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{cancel}
 \usepackage{stmaryrd}
+\usepackage[appendix=append]{apxproof}
+\renewcommand{\appendixsectionformat}[2]{Preuves de section~#1\ (#2)}
 \usepackage{hyperref}
 \usepackage{xcolor}
 \definecolor{blueuppa}{HTML}{67B0E2}
@@ -41,6 +44,7 @@
 \setlist[itemize,2]{label=$\triangleright$}
 \setlist[itemize,3]{label=$\triangleleft$}
 %---------------------------------------------------------
+\NewDocumentCommand{\PT}{O{1} O{\mathcal T}}{\mathcal{P}^{#1}_{#2}}
 \newcommand{\nparammodel}{n_W}
 \newcommand{\ndata}{n_D}
 \newcommand{\ndataall}{n_D^*}
@@ -67,14 +71,23 @@
  \newcommand{\im}{\operatorname{Im}} 
  \newcommand{\id}{\operatorname{id}} 
 %---------------------------------------------------------
-\newtheorem{theorem}{Théorème}[section]
+\newtheoremrep{theorem}{Théorème}[section]
 \newtheorem{corollary}{Corollaire}[theorem]
 \newtheorem{lemma}[theorem]{Lemme}
 \newtheorem{algorithm}[theorem]{Algorithme}
 \newtheorem{remark}[theorem]{Remarque}
 \newtheorem{definition}[theorem]{Définition}
 \newtheorem{example}[theorem]{Exemple}
-\newtheorem{exercise}[theorem]{Exercice}
+\newtheoremrep{exercise}{Exercice}[section]
+\usepackage[framemethod=TikZ]{mdframed}
+\mdfdefinestyle{mdftheorem}{roundcorner=5pt,leftmargin=2pt,rightmargin=2pt,%
+innerleftmargin=5pt,innerrightmargin=5pt,linewidth=1pt,innertopmargin=1pt,innerbottommargin=5pt,%
+backgroundcolor=blue!4,linecolor=blue!40!black}
+\mdfdefinestyle{mdfexercise}{roundcorner=5pt,leftmargin=2pt,rightmargin=2pt,%
+innerleftmargin=5pt,innerrightmargin=5pt,linewidth=1pt,innertopmargin=1pt,innerbottommargin=5pt,%
+backgroundcolor=green!4,linecolor=green!40!green}
+\newenvironment{theoremnn}{\mdframed[style=mdftheorem]\theoremrep}{\endmdframed\endtheoremrep}
+\newenvironment{exercisenn}{\mdframed[style=mdfexercise]\exerciserep}{\endmdframed\endexerciserep}
 
 %---------------------------------------------------------
 \title{M2 MMS : Réseaux de neurones pour la modélisation}
@@ -121,6 +134,14 @@ Prérequis
 \item \texttt{list}, \texttt{dict}, \texttt{class}
 \item \texttt{numpy}
 \end{itemize}
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection*{Notations}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Pour des vecteurs $x,y\in\R^n$ on utilise $\transpose{x}y=\sum\limits_{i=1}^n x_iy_i$ pour le produite scalaire euclidien est $\abs{x}=\sqrt{\transpose{x}x}$ pour la norme associée.
+
+Pour $f:\R\to \R$ on définit $f:\R^n\to\R^n$ (sans distinction de notation !) composante par composante, $\left(f(x)\right)_i = f(x_i), 1\le i\le n$. 
+
 %
 %==========================================
 \section{Machines et réseaux de neurones}\label{sec:}
@@ -194,8 +215,6 @@ Plein d'autres son possible. Attention : l'image de $\sigma$ est importante.
 %
 %--------------------------------------
 \begin{definition}\label{definition:}
-Pour $f:\R\to \R$ on définit $f:\R^n\to\R^n$ (sans distinction de notation !) composante par composante, $\left(f(x)\right)_i = f(x_i), 1\le i\le n$. 
-
 Un \textbf{réseau à une couche ('perceptron')} $(W,b,\sigma), W\in \R^{m\times n}, b\in \R^m$ est l'application 
 %
 \begin{equation}\label{equation:}
@@ -247,21 +266,85 @@ C'est le gradient de  ${\rm logsumexp}_{\beta}: \R^n\to\R,\quad x\mapsto \beta\l
 %
 %
 %--------------------------------------
-\begin{exercise}\label{exercise:}
+\begin{exercisenn}\label{exercise:}
+Soit $a<b$. Une partition $\mathcal T$ de l'intervalle est un ensemble ordonné de $r\in\N_{\ge1}$ points $x_i$ tel que
+$$
+\mathcal T: a=x_0<x_1<\ldots<x_{n}=b,\quad I_k = [x_{k-1}, x_k[
+$$
+Une fonction $\varphi:[a; b] \rightarrow \mathbb{R}$ est affine par morceaux sur la partition $\mathcal T$ de $[a;b]$
+s'il existe des nombres réels $\alpha_k, \beta_k$ tel que pour $k=1, \ldots, n$ nous avons
+%
+\begin{equation}\label{equation:td_DefP1surabpm}
+\varphi(x)=\alpha_k+\beta_k x \quad \text { pour $x\in I_k$},\quad \varphi(b) = \alpha_{n}+\beta_{n} b.
+\end{equation}
+Soit $\mathcal T$ une partition de $[a;b]$. On définit
+%
+\begin{equation}\label{equation:td_DefP1surab}
+\PT:= \SetDef{\varphi\in C([a;b])}{\mbox{$\varphi$ est affine par morceaux sur $\mathcal T$}}.
+\end{equation}
+%
+Montrer que
+%
 \begin{enumerate}
-\item Écrire un MLP qui permet de construire l'espace $P^1(h)$ sur un maillage 1D $h=(t_0,\cdots, t_n)$.
+\item  $\PT$ est un espace vectoriel.
+\item  Soit $\varphi\in\PT$ écrite sous la forme \eqref{equation:td_DefP1surabpm}. Quelles conditions doivent satisfaire les paramètres 
+$\alpha_k$ et $\beta_k$ ?
+\item  Il existe des fonctions $\varphi_k\in \PT$, $0\le k\le n$ telles que
+%
+\begin{equation}\label{equation:BaseP1}
+\varphi_k(x_{\ell}) = \begin{cases}
+1 \quad& k=\ell,\\
+0 \quad& k\ne \ell.
+\end{cases}
+= \delta_{k\ell}\quad\mbox{(symbole de Kronecker)}.
+\end{equation}
+\item  Toute fonction $\varphi\in \PT$ s'écrit comme
+%
+\begin{equation}\label{equation:}
+\varphi(x) = \sum_{k=0}^{n+1} c_k \varphi_k(x)\quad c_k\in\R.
+\end{equation}
+En particuliers, determiner les $c_k$ pour $\varphi\in \PT$ de la forme \eqref{equation:td_DefP1surabpm}.
+\item Toute fonction $\varphi \in\PT$ s'écrit comme
+%
+\begin{equation}\label{equation:td_DefP1surabbis}
+\varphi(x)=\alpha+\beta x+\sum_{k=1}^{n-1} d_k(x-x_k)_+
+\end{equation}
+%
+avec  $\alpha, \beta, d_k \in \mathbb{R}$.
+\item Toute fonction $f:[a; b] \rightarrow \mathbb{R}$ continue peut être approchée de façon uniforme par $\PT$, c'est à dire qu'il existe pour tout  $\varepsilon>0$ une fonction $\varphi \in \PT$ de sorte que
+$$
+|f(x)-\varphi(x)| \leq \eps \quad \forall  a\le x\le b.
+$$
+\item Écrire un MLP qui permet de construire l'espace $P^1(h)$ sur un maillage 1D $h=(a=x_0,\cdots, x_n=b)$.
 \raisebox{-15mm}{\includegraphics[keepaspectratio = true, width = 0.4\textwidth] {images/P1}}
 \item Se servir de la formule pour $k\ge 1$
 %
 \begin{equation}\label{equation:}
-\sum_{j=0}^k b_j t^j + \sum_{i=1}^n a_i (t-t_i)^k_+
+\sum_{j=0}^k b_j x^j + \sum_{i=1}^{n-1} a_i (x-x_i)^k_+
 \end{equation}
 %
-pour construire un MLP pour les B-splines.
+pour construire un MLP pour l'espace des  B-splines ${\mathcal B}^k_{\mathcal T}$.
 %
 \item Comment construire un MLP pour le $P^1(h)$ sur un maillage en triangles ?
 \end{enumerate}
-\end{exercise}
+\end{exercisenn}
+%--------------------------------------
+%
+%
+%--------------------------------------
+\begin{proof}
+\begin{enumerate}
+\item Évidemment.
+\item Continuité aux $x_i$.
+\item Voir éléments finis.
+\item Voir éléments finis.
+\item C'est un changement de base $\Set{1, (x-x_k)_+}$ est une autre base Nous avons
+\begin{align*}
+1 = \sum_{k=0}^{n+1}\phi_k,\quad (x-x_k)_+ = \sum_{j=k+1}^n (x_j-x_k)\phi_j(x).
+\end{align*}
+\item Continuité uniforme.
+\end{enumerate}
+\end{proof}
 %--------------------------------------
 %
 %==========================================
@@ -414,9 +497,9 @@ Il y a une certaine ambiguïté dans nos définition de couches et de fonction d
 %
 %
 %--------------------------------------
-\begin{theorem}\label{theorem:}
+\begin{theoremnn}\label{theorem:}
 Si la machine contient une couche de la forme $x\to \sigma(Wx+b)$, on peut modifier la fonction de perte telle que la machine est vectorielle.
-\end{theorem}
+\end{theoremnn}
 %--------------------------------------
 %
 %
@@ -509,7 +592,7 @@ $DF_x(x,z)$ et $DF_z(x,z)$ pour les dérivées  "partielles".
 On rappelle également
 %
 %--------------------------------------
-\begin{theorem}\label{theorem:}
+\begin{theoremnn}\label{theorem:}
 Soit $m,n,p\in\N$, $U\subset\R^n$, $V\subset \R^m$, $F\in C^1(U,\R^m)$, $G\in C^1(V,\R^p)$ et $F(U)\subset V$. Alors $h := g\circ f\in C^1(U,\R^p)$ et 
 pour $x\in U$ et $y:=f(x)\in V$
 %
@@ -517,21 +600,21 @@ pour $x\in U$ et $y:=f(x)\in V$
 Dh(x) = Dg(y) Df(x),\quad\cdtriangle{U}{V}{\R^m}{h}{f}{g},\quad\cdtriangle{\R^n}{\R^n}{\R^m}{Dh(x)}{Df(x)}{Dg(y)}.
 \end{equation}
 %
-\end{theorem}
+\end{theoremnn}
 %--------------------------------------
 %
 
 Par les théorèmes du calcul différentiel nous avons.
 %
 %--------------------------------------
-\begin{theorem}\label{theorem:}
+\begin{theoremnn}\label{theorem:}
 Si $L$ et $\Phi$ sont continûment différentiables, alors   $\widetilde{L}\in C^1(\R^{\nparammodel})$, le gradient de $\widetilde{L}$ s'écrit
 %
 \begin{equation}\label{equation:}
 \nabla  \widetilde{L}(w) = \frac{1}{\ndata}\sum_{i=1}^{\ndata} \transpose{\Phi'_w(x_i,w)}\nabla_z L(\Phi(x_i,w),y_i)
 \end{equation}
 %
-\end{theorem}
+\end{theoremnn}
 %--------------------------------------
 %
 %
@@ -547,15 +630,15 @@ Si $L$ et $\Phi$ sont continûment différentiables, alors   $\widetilde{L}\in C
 %
 %
 %==========================================
-\section{EDO et méthode de collocation}\label{sec:}
+\section{EDO}\label{sec:}
 %==========================================
 %
-On considère $U\subset \R^n$ ouvert, $u_0\in U$ et une fonction $f\in C^1(U,\R^n)$. L'équation différentielle ordinaire (EDO) d'ordre un autonome
+On considère $U\subset \R^n$ ouvert, $u_0\in U$ et une fonction $f\in C^1(U,\R^n)$. L'équation différentielle ordinaire (EDO) d'ordre un
 %
 \begin{equation}\label{equation:EDO}
 \left\{
 \begin{aligned}
-\frac{du}{dt} = f(u)\\
+\frac{du}{dt} = f(t,u)\\
 u(0) = u_0.
 \end{aligned}
 \right.
@@ -564,7 +647,7 @@ u(0) = u_0.
 On rappelle le théorème de Cauchy-Lipschitz. S'il existe $r>0$ et $L>0$ tel que
 %
 \begin{equation}\label{equation:CondLip}
-\norm{f(u)-f(v)}\le L\norm{u-v}\quad \forall u,v\in U\cap B_r(u_0),
+\abs{f(u)-f(v)}\le L\abs{u-v}\quad \forall u,v\in U\cap B_r(u_0),
 \end{equation}
 %
 alors il existe $T>0$ et une solution unique de \eqref{equation:EDO} sur $[0,T]$. $f\in C^1(U,\R^n)$ est suffisant pour \eqref{equation:CondLip}.
@@ -574,23 +657,18 @@ alors il existe $T>0$ et une solution unique de \eqref{equation:EDO} sur $[0,T]$
 \begin{remark}\label{remark:}
 \begin{enumerate}
 \item Il existe un temps maximal $T\in\R\cup\Set{+\infty}$ d'existence de solution. Si $T<+\infty$, nous avons $\lim\limits_{t\nearrow T}\abs{u(t)}=+\infty$.
-\item L'équation non-autonome
+\item L'équation \eqref{equation:EDO} s'écrit comme une EDO autonome avec une variable supplémentaire
 \begin{align*}
-\frac{du}{dt} = f(t,u)
+\frac{dv}{dt} = g(v),\quad v(0)=v_0
 \end{align*}
- s'écrite comme \eqref{equation:EDO} avec $\widetilde{u} = (u, v)$, $\widetilde{f}(\widetilde{u}) = (f(v,u),1)$ et $\widetilde{u_0}=(u_0,0)$, la variable $v$ est le temps.
+avec $v = (u, t)$, $g(v) = (f(u),1)$ et $v_0=(u_0,0)$, la variable supplémentaire est le temps.
 \end{enumerate}
 \end{remark}
 %--------------------------------------
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Méthode de collocation et méthode de Galerkin}\label{subsec:}
+\subsection{Méthodes de collocation}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%
-%------------------------------------
-\subsubsection{Méthode de collocation}
-%------------------------------------
-
 Une méthode de collocation sur un intervalle $I=[0;T]$ consiste à choisir un espace $X_N\subset C^1(I,\R^n)$ de dimension $N+1$ et des points (maillage)
 %
 \begin{equation}\label{equation:Mesh}
@@ -622,28 +700,77 @@ K c = \gamma,\quad K_{ij} = \frac{d\phi_j}{dt}(t_i) - A\phi_j(t_i),\quad \gamma_
 %
 %
 %--------------------------------------
-\begin{example}\label{example:}
-Pour $X_N = B^1(I)$, l'espace des spline quadratique de classe $C^1$ sur le \textbf{même} maillage $(t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson. Plus généralement, les méthodes de collocation font partie des méthode de Runge-Kutta implicites.
-\end{example}
+\begin{exercisenn}\label{exercise:}
+On rappelle (voir le cours d'analyse numérique M1MMS) que
+\begin{enumerate}
+\item[i)] pour deux nombres réels $a<b$ un \textbf{maillage} $h=(t_i)_{0\le i\le N}$ est une partition de l'intervalle $[a;b]$
+\begin{align*}
+a = t_0 < t_1 < \cdots < t_n = b,\quad I_j:= [t_{j-1}; t_j[,\quad \left(1\le j\le N\right),
+\end{align*}
+\item[ii)] l'espace des \textbf{B-splines} d'ordre $k\in\N^*$ sur un maillage $h=(t_i)_{0\le i\le N}$ est défini par
+%
+\begin{equation}\label{equation:}
+{\mathcal B}^k_h(I) := \SetDef{v\in C^{k-1}([a;b])}{ \Rest{v}{I_j}\in P^{k}(I_j)\; 1\le j\le N}.
+\end{equation}
+%
+\end{enumerate}
+\begin{enumerate}
+\item Pour $X_N = {\mathcal B}^2_h(I)$, l'espace des splines quadratiques de classe $C^1$ sur le \textbf{même} maillage $h= (t_i)_{0\le i\le N}$ on obtient un schéma de type Crank-Nicoloson pour une EDO linéaire à coefficients constants et $h$ uniforme. 
+\item Faire une analyse de l'erreur de la méthode.
+\end{enumerate}
+\end{exercisenn}
 %--------------------------------------
 %
 %
-%------------------------------------
-\subsubsection{Méthode de Galerkin}
-%------------------------------------
+%--------------------------------------
+\begin{remark}\label{remark:}
+Les méthodes de collocation font partie des méthodes de Runge-Kutta implicites.
+\end{remark}
+%--------------------------------------
 %
-Une méthode de Galerkin consiste à choisir deux espaces $X_N$ et $Y_N$ associé à $\tau$ et l'approximation est définie par
 %
-\begin{equation}\label{equation:}
-u\in u_0+X_N :\;\int_0^T \frac{du}{dt} v =  \int_0^T f(u) v\quad \forall v\in Y_n.
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Méthode variationnelle}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Le théorème de Cauchy-Lipschitz cherche une solution dans l'espace de Banach $C([0;T],\R^n)$. Ensuite cette solution sera même $C^1([0;T],\R^n)$ si $f$ est continue. 
+
+Ici on va chercher une solution dans $X:=H^1([0;T],\R^n)$ telle que pour tout $(v,v_0)\in Y:=L^2([0;T],\R^n)\times\R^n$
+%
+\begin{equation}\label{equation:MethodeVarODE}
+u\in X :\;\int_0^T \transpose{v(s)}\frac{du}{dt}(s)\,ds + \transpose{v_0}u(0)=  \int_0^T \transpose{v(s)}f(s,u(s))\,ds+ \transpose{v_0}u(0).
 \end{equation}
 %
+On peut baser la démonstration de Cauchy-Lipschitz sur \eqref{equation:MethodeVarODE}, mais ce n'est pas l'objectif ici. Par contre, voyons le cas affine-autonome, $f(t,u) = b - A u$. Dans ce cas l'existence (et l'unicité) de la formulation \eqref{equation:MethodeVarODE} est assuré 
+si la forme bilinéaire
+\begin{align*}
+a(u, (v,v_0)) := \int_0^T \transpose{v(s)}\left(\frac{du}{dt}(s)+Au(s)\right)\,ds  + \transpose{v_0}u(0)
+\end{align*}
+satisfait la condition inf-sup (voir le cours d'analyse numérique M2MMS)
+%
+\begin{equation}\label{equation:infsup_affaut}
+\inf_{u\in B_{X}}\sup_{(v,v_0)\in B_{Y}} a(u, (v,v_0)) = \inf_{(v,v_0)\in B_{Y}}\sup_{u\in B_{X}} a(u, (v,v_0)) = \gamma >0.
+\end{equation}
+% 
 %
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{Fonction loss}\label{subsec:}
+\subsection{Méthode de Galerkin}\label{subsec:}
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %
-Une première idée  (PINN) est d'utiliser un espace $\tilde X=X_{\Phi}$ généré par une machine vectorielles $\Phi$ est d'utiliser la fonction perte
+%
+Une méthode de Galerkine (conforme) consiste à définir deux espaces $X_N\subset$ et $Y_N\subset Y$ et chercher $u\in X_N$ tel que
+%
+\begin{equation}\label{equation:}
+\int_0^T \transpose{v(s)}\frac{du_N}{dt}(s)\,ds + \transpose{v_0}u_N(0)=  \int_0^T \transpose{v(s)}f(s,u_N(s))\,ds+ \transpose{v_0}u(0)
+\end{equation}
+%
+pour tout $(v,v_0)\in Y_N$.
+%
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsection{Fonction loss PINN}\label{subsec:}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+%
+Une première idée est d'utiliser un espace $\tilde X=X_{\Phi}$ généré par une machine vectorielles $\Phi$ est d'utiliser la fonction perte
 \begin{align*}
 \frac12\norm{\tilde u(0)-u_0}^2 + \sum_{i=0}^N \frac12\norm{\frac{d\tilde u}{dt}(t_i) - f(\tilde u(t_i)}^2
 \end{align*}
